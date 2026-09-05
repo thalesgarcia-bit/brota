@@ -1,0 +1,147 @@
+import type { SVGProps } from 'react';
+
+import { cn } from '@/lib/utils/cn';
+
+/* ===========================================================================
+ * ÍCONES DO BROTA
+ *
+ * Conjunto próprio, desenhado na mesma grade de 24 px, traço 1.75 e pontas
+ * arredondadas. Ter os ícones aqui — em vez de uma biblioteca genérica —
+ * garante a linguagem visual consistente que o design system exige e evita
+ * uma dependência a mais.
+ * =========================================================================== */
+
+const PATHS = {
+  // Navegação
+  home: 'M3 10.5 12 3l9 7.5M5.5 9.5V20a1 1 0 0 0 1 1H10v-6h4v6h3.5a1 1 0 0 0 1-1V9.5',
+  compass: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM15.5 8.5l-2 5-5 2 2-5 5-2Z',
+  plus: 'M12 5v14M5 12h14',
+  plusCircle: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 8.5v7M8.5 12h7',
+  scan: 'M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M9.5 14.5c1.8 1.2 3.6.6 4.5-.9 1-1.7.4-4-2-5.6-2 1.6-3.5 4-2.5 6.5Z',
+  user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4.5 20.5a7.5 7.5 0 0 1 15 0',
+  users: 'M10 11.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7ZM3.5 20a6.5 6.5 0 0 1 13 0M16.5 5.2a3.5 3.5 0 0 1 0 6.6M18 14.4a6.5 6.5 0 0 1 3 5.6',
+  bell: 'M18 9a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6M10.3 20a2 2 0 0 0 3.4 0',
+  settings:
+    'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7.5 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 3 14.5H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 7.5a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1 1.6 1.6 0 0 0 .3 0l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z',
+  menu: 'M4 7h16M4 12h16M4 17h16',
+  close: 'M6 6l12 12M18 6 6 18',
+  chevronLeft: 'M15 5l-7 7 7 7',
+  chevronRight: 'M9 5l7 7-7 7',
+  chevronDown: 'M5 9l7 7 7-7',
+  chevronUp: 'M19 15l-7-7-7 7',
+  arrowRight: 'M4 12h15M13 6l6 6-6 6',
+  arrowLeft: 'M20 12H5M11 18l-6-6 6-6',
+  externalLink: 'M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4',
+
+  // Botânica
+  leaf: 'M4.5 19.5C3 14 6 5.5 19.5 4.5c1 9-4 15-9.5 15-2 0-4-.5-5.5-1ZM5 19.5c2.5-4 6-6.5 10-8',
+  sprout: 'M12 20v-6M12 14C12 9.6 15.6 6 20 6c0 4.4-3.6 8-8 8ZM12 14c0-3.3-2.7-6-6-6 0 3.3 2.7 6 6 6Z',
+  flower:
+    'M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM12 10V7a2.5 2.5 0 1 1 2.5 2.5M12 14v3a2.5 2.5 0 1 0-2.5-2.5M14 12h3a2.5 2.5 0 1 1-2.5 2.5M10 12H7a2.5 2.5 0 1 0 2.5-2.5M12 21v-4',
+  droplet: 'M12 3.5s6 6.2 6 10a6 6 0 1 1-12 0c0-3.8 6-10 6-10Z',
+  sun: 'M12 16.5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9ZM12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4',
+  cloudSun: 'M8 5V3.5M4.6 6.6 3.5 5.5M4 10H2.5M11.4 6.6l1.1-1.1M8 14a4 4 0 1 1 3.5-6M17 20H8a4 4 0 0 1 0-8 5 5 0 0 1 9.6 1.4A3.3 3.3 0 0 1 17 20Z',
+  moon: 'M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z',
+  thermometer:
+    'M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0ZM12 18a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z',
+  scissors:
+    'M6.5 8.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM6.5 20.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM8.7 7.3 20 19M20 5 8.7 16.7',
+  pot: 'M5 8h14l-1.3 10.2A2 2 0 0 1 15.7 20H8.3a2 2 0 0 1-2-1.8L5 8ZM4 8V6.5A1.5 1.5 0 0 1 5.5 5h13A1.5 1.5 0 0 1 20 6.5V8',
+  sparkle:
+    'M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3ZM18.5 15.5l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2Z',
+
+  // Social
+  heart:
+    'M12 20s-7.5-4.4-7.5-9.4A4.1 4.1 0 0 1 12 8a4.1 4.1 0 0 1 7.5 2.6C19.5 15.6 12 20 12 20Z',
+  message: 'M20 12a7.5 7.5 0 0 1-10.9 6.7L4 20l1.3-5.1A7.5 7.5 0 1 1 20 12Z',
+  messageOff:
+    'M4 4l16 16M8.6 5.2A7.5 7.5 0 0 1 19 12c0 1.2-.3 2.3-.8 3.3M5.3 8.4A7.5 7.5 0 0 0 5.3 14.9L4 20l5.1-1.3c1.6.9 3.4 1.1 5.1.7',
+  bookmark: 'M6.5 4h11a1 1 0 0 1 1 1v15l-6.5-4-6.5 4V5a1 1 0 0 1 1-1Z',
+  share: 'M8.7 13.3 15.4 17M15.3 7 8.7 10.7M18 8.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM6 14.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM18 20.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z',
+  moreHorizontal:
+    'M6 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM18 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z',
+  flag: 'M5 21V4M5 5h11l-1.5 4L16 13H5',
+
+  // Sistema
+  search: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM20 20l-4-4',
+  filter: 'M4 6h16M7 12h10M10 18h4',
+  check: 'M5 12.5 10 17.5 19 7',
+  checkCircle: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM8.5 12.2l2.5 2.5 4.5-5',
+  xCircle: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM9.5 9.5l5 5M14.5 9.5l-5 5',
+  alert: 'M12 3.5 21.5 20H2.5L12 3.5ZM12 10v4M12 17.2v.1',
+  info: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 11v5M12 8v.1',
+  shield: 'M12 3l7 3v5.5c0 4.3-3 7.6-7 9.5-4-1.9-7-5.2-7-9.5V6l7-3ZM9.5 12l2 2 3.5-4',
+  lock: 'M7 11V8a5 5 0 0 1 10 0v3M5.5 11h13a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Z',
+  mail: 'M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1ZM3.5 7l8.5 6 8.5-6',
+  eye: 'M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12ZM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z',
+  eyeOff: 'M4 4l16 16M9.9 5.9A9 9 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3.3 4M6.5 8A17 17 0 0 0 2.5 12S6 18.5 12 18.5c1 0 2-.2 2.9-.5M10 10a3 3 0 0 0 4 4',
+  logout: 'M15 17v2a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v2M10 12h11M18 9l3 3-3 3',
+  trash: 'M4.5 7h15M9 7V5.5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1V7M6.5 7l.8 12a1 1 0 0 0 1 1h7.4a1 1 0 0 0 1-1l.8-12M10 11v6M14 11v6',
+  edit: 'M4 20h4l10-10a2.1 2.1 0 0 0-3-3L5 17v3ZM14.5 6.5l3 3',
+  image: 'M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1ZM8.5 11a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM3.5 16.5 9 12l4 3.5 3-2.5 4.5 4',
+  camera: 'M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1ZM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z',
+  upload: 'M12 16V4M8 8l4-4 4 4M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4',
+  mapPin: 'M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z',
+  navigation: 'M21 3 3 10.5l8 2.5 2.5 8L21 3Z',
+  phone: 'M6.5 3.5h3l1.5 4-2 1.5a12 12 0 0 0 6 6l1.5-2 4 1.5v3a2 2 0 0 1-2 2A17 17 0 0 1 4.5 5.5a2 2 0 0 1 2-2Z',
+  clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 7.5V12l3 2',
+  calendar: 'M4.5 6h15a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1ZM8 3.5v4M16 3.5v4M3.5 11h17',
+  book: 'M5 4.5h9a3 3 0 0 1 3 3V20a2.5 2.5 0 0 0-2.5-2.5H5V4.5ZM19 6v11.5',
+  graduation: 'M12 4 22 9l-10 5L2 9l10-5ZM6.5 11.5V17c0 1.5 2.5 3 5.5 3s5.5-1.5 5.5-3v-5.5',
+  globe: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM3.5 9h17M3.5 15h17M12 3c-2.5 2.5-3.5 5.6-3.5 9s1 6.5 3.5 9c2.5-2.5 3.5-5.6 3.5-9S14.5 5.5 12 3Z',
+  star: 'M12 4l2.4 5 5.6.8-4 3.9 1 5.5-5-2.7-5 2.7 1-5.5-4-3.9 5.6-.8L12 4Z',
+  chart: 'M4 20V4M4 20h16M8 17v-5M12.5 17V8M17 17v-7',
+  grid: 'M4 4h6v6H4V4ZM14 4h6v6h-6V4ZM4 14h6v6H4v-6ZM14 14h6v6h-6v-6Z',
+  list: 'M8 6h13M8 12h13M8 18h13M4 6h.01M4 12h.01M4 18h.01',
+  refresh: 'M4 10a8 8 0 0 1 13.7-4.6L20 8M20 5v3h-3M20 14a8 8 0 0 1-13.7 4.6L4 16M4 19v-3h3',
+  loader: 'M12 4v3M12 17v3M4 12h3M17 12h3M6.3 6.3l2.1 2.1M15.6 15.6l2.1 2.1M6.3 17.7l2.1-2.1M15.6 8.4l2.1-2.1',
+  note: 'M6 3.5h9.5L20 8v12.5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-16a1 1 0 0 1 1-1ZM15 3.5V8h4.5M8.5 13h7M8.5 17h4',
+  move: 'M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3',
+} as const;
+
+export type IconName = keyof typeof PATHS;
+
+export const ICON_NAMES = Object.keys(PATHS) as IconName[];
+
+type IconProps = Omit<SVGProps<SVGSVGElement>, 'name'> & {
+  name: IconName;
+  size?: number;
+  /**
+   * Descrição para leitores de tela. Quando ausente, o ícone é tratado como
+   * decorativo (aria-hidden) — o que exige que o texto ao lado carregue o
+   * significado.
+   */
+  title?: string;
+  strokeWidth?: number;
+};
+
+export function Icon({
+  name,
+  size = 20,
+  title,
+  strokeWidth = 1.75,
+  className,
+  ...props
+}: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={cn('shrink-0', className)}
+      role={title ? 'img' : undefined}
+      aria-hidden={title ? undefined : true}
+      aria-label={title}
+      focusable="false"
+      {...props}
+    >
+      {title ? <title>{title}</title> : null}
+      <path d={PATHS[name]} />
+    </svg>
+  );
+}

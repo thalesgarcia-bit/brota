@@ -1,0 +1,1117 @@
+// BROTA — Comunidade Inteligente de Plantas
+// Modelagem de dados. Cada bloco corresponde a um domínio do produto.
+// Regra: informação botânica oficial nunca se mistura com opinião da comunidade.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// ENUMS
+// ---------------------------------------------------------------------------
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+enum LightRequirement {
+  FULL_SUN // sol direto por várias horas
+  PARTIAL_SUN // sol direto por algumas horas
+  BRIGHT_INDIRECT // claridade indireta abundante
+  LOW_LIGHT // pouca luz natural
+}
+
+enum WaterFrequency {
+  HIGH // substrato sempre levemente úmido
+  MODERATE
+  LOW
+  VERY_LOW // deixar secar bem entre regas
+}
+
+enum HumidityLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum GrowthRate {
+  SLOW
+  MODERATE
+  FAST
+}
+
+enum SizeCategory {
+  SMALL // até ~40 cm
+  MEDIUM // ~40 cm a 1,5 m
+  LARGE // acima de 1,5 m
+}
+
+enum ToxicityLevel {
+  NONE
+  MILD
+  MODERATE
+  SEVERE
+  UNKNOWN
+}
+
+enum PublicationStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+/// Procedência da informação botânica. Nunca exibir SEED_UNREVIEWED como validada.
+enum DataQuality {
+  SEED_UNREVIEWED
+  COMMUNITY
+  REVIEWED
+}
+
+enum EnvironmentKind {
+  INDOOR
+  OUTDOOR
+  BALCONY
+  GARDEN
+  WINDOW
+  OFFICE_BEDROOM
+}
+
+enum HousingType {
+  HOUSE
+  APARTMENT
+  FARM
+  OTHER
+}
+
+enum CareTime {
+  DAILY
+  FEW_TIMES_WEEK
+  WEEKLY
+  MINIMAL
+}
+
+enum ExperienceLevel {
+  NONE
+  BEGINNER
+  INTERMEDIATE
+  EXPERIENCED
+}
+
+enum SpaceSize {
+  TINY
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum ClimateKind {
+  HOT
+  MILD
+  COLD
+  DRY
+  HUMID
+  UNSURE
+}
+
+enum PostType {
+  MY_PLANT
+  BEFORE_AFTER
+  TIP
+  QUESTION
+  IDENTIFICATION
+  ACHIEVEMENT
+}
+
+enum ContentStatus {
+  PUBLISHED
+  HIDDEN_BY_MODERATION
+  REMOVED_BY_AUTHOR
+}
+
+enum DiaryEntryType {
+  WATERING
+  FERTILIZING
+  PRUNING
+  REPOTTING
+  RELOCATION
+  FLOWERING
+  NEW_LEAF
+  PEST
+  PHOTO
+  NOTE
+}
+
+enum ReminderKind {
+  WATERING
+  FERTILIZING
+  PRUNING
+  REPOTTING
+  CHECKUP
+}
+
+enum IdentificationStatus {
+  AWAITING_PROVIDER
+  RESOLVED_BY_PROVIDER
+  AWAITING_REVIEW
+  IN_REVIEW
+  NEEDS_MORE_INFO
+  IDENTIFIED
+  INADEQUATE_IMAGE
+  CLOSED
+}
+
+enum SuggestionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ReportTargetType {
+  POST
+  COMMENT
+  USER
+}
+
+enum ReportReason {
+  SPAM
+  OFFENSIVE
+  DANGEROUS_INFORMATION
+  INAPPROPRIATE
+  COPYRIGHT
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+enum NotificationType {
+  COMMENT
+  REPLY
+  LIKE
+  IDENTIFICATION_RESOLVED
+  SUGGESTION_APPROVED
+  SUGGESTION_REJECTED
+  REMINDER
+  ADMIN_NOTICE
+  ACHIEVEMENT
+}
+
+enum SavedItemKind {
+  PLANT
+  POST
+  ARTICLE
+}
+
+enum RecommendationAction {
+  VIEWED
+  SAVED
+  DISMISSED
+  ADDED_TO_GARDEN
+}
+
+enum EstablishmentSource {
+  OSM
+  MANUAL
+}
+
+// ---------------------------------------------------------------------------
+// AUTENTICAÇÃO E IDENTIDADE (Auth.js + credenciais)
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  passwordHash  String?
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  /// Exclusão de conta (LGPD): marca o registro e anonimiza os dados pessoais.
+  deletedAt     DateTime?
+
+  accounts Account[]
+  sessions Session[]
+  profile  Profile?
+
+  greenProfile   GreenProfile?
+  posts          Post[]
+  comments       Comment[]
+  reactions      Reaction[]
+  savedItems     SavedItem[]
+  collections    Collection[]
+  userPlants     UserPlant[]
+  notifications  Notification[]
+  identifications IdentificationRequest[] @relation("IdentificationAuthor")
+  identificationsResolved IdentificationRequest[] @relation("IdentificationResolver")
+  suggestions    PlantSuggestion[]        @relation("SuggestionAuthor")
+  suggestionsReviewed PlantSuggestion[]   @relation("SuggestionReviewer")
+  reportsMade    Report[]                 @relation("Reporter")
+  reportsHandled Report[]                 @relation("ReportHandler")
+  moderationActions ModerationAction[]
+  auditLogs      AuditLog[]
+  followers      Follow[]                 @relation("Following")
+  following      Follow[]                 @relation("Follower")
+  achievements   UserAchievement[]
+  recommendations Recommendation[]
+  recommendationFeedback RecommendationFeedback[]
+  articlesAuthored EducationalArticle[]
+  plantsCreated  Plant[]                  @relation("PlantCreatedBy")
+  searchLogs     SearchLog[]
+  consents       ConsentRecord[]
+
+  @@index([role])
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+/// Dados públicos do usuário. O e-mail nunca fica aqui — não é exibido publicamente.
+model Profile {
+  id              String          @id @default(cuid())
+  userId          String          @unique
+  username        String          @unique
+  displayName     String
+  bio             String?         @db.VarChar(280)
+  avatarUrl       String?
+  /// Localização aproximada e opcional. Nunca coordenadas exatas.
+  city            String?
+  state           String?
+  showLocation    Boolean         @default(false)
+  experienceLevel ExperienceLevel @default(NONE)
+  isPublic        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([username])
+  @@map("profiles")
+}
+
+model Follow {
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@index([followingId])
+  @@map("follows")
+}
+
+// ---------------------------------------------------------------------------
+// BASE BOTÂNICA
+// Campos estruturados. Nada de "descrição gigante" guardando tudo.
+// ---------------------------------------------------------------------------
+
+model Plant {
+  id             String  @id @default(cuid())
+  slug           String  @unique
+  scientificName String  @unique
+  family         String
+  genus          String
+  origin         String?
+  description    String  @db.Text
+
+  // Cuidados — estruturados para alimentar busca, filtros e recomendação
+  light          LightRequirement
+  water          WaterFrequency
+  humidity       HumidityLevel
+  tempMinC       Int?
+  tempMaxC       Int?
+  substrate      String?          @db.Text
+  fertilization  String?          @db.Text
+  pruning        String?          @db.Text
+  propagation    String?          @db.Text
+  flowering      String?          @db.Text
+
+  size       SizeCategory
+  growthRate GrowthRate
+  difficulty Difficulty
+
+  // Segurança botânica — nunca escondida na interface
+  toxicityHumans ToxicityLevel @default(UNKNOWN)
+  toxicityDogs   ToxicityLevel @default(UNKNOWN)
+  toxicityCats   ToxicityLevel @default(UNKNOWN)
+  toxicityNote   String?       @db.Text
+
+  commonProblems String? @db.Text
+  commonPests    String? @db.Text
+  commonMistakes String? @db.Text
+  curiosity      String? @db.Text
+
+  isNative     Boolean @default(false)
+  isAirPurifying Boolean @default(false)
+
+  status      PublicationStatus @default(DRAFT)
+  dataQuality DataQuality       @default(SEED_UNREVIEWED)
+
+  createdById String?
+  createdBy   User?     @relation("PlantCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  /// Coluna desnormalizada usada apenas pela busca textual (nome científico + populares).
+  searchText String @default("")
+
+  commonNames  PlantCommonName[]
+  images       PlantImage[]
+  sources      PlantSource[]
+  categories   PlantCategoryLink[]
+  environments PlantEnvironment[]
+  problems     PlantProblem[]
+
+  similarTo   PlantSimilarity[] @relation("SimilarityFrom")
+  similarFrom PlantSimilarity[] @relation("SimilarityTo")
+
+  userPlants             UserPlant[]
+  posts                  Post[]
+  savedItems             SavedItem[]
+  collectionItems        CollectionItem[]
+  recommendations        Recommendation[]
+  recommendationFeedback RecommendationFeedback[]
+  suggestions            PlantSuggestion[]
+  identificationsResolved IdentificationRequest[]
+  identificationCandidates IdentificationCandidate[]
+  dailyFeatures          DailyPlant[]
+
+  @@index([status, publishedAt])
+  @@index([light, water, difficulty])
+  @@index([size])
+  @@index([family])
+  @@map("plants")
+}
+
+model PlantCommonName {
+  id        String  @id @default(cuid())
+  plantId   String
+  name      String
+  isPrimary Boolean @default(false)
+  region    String?
+
+  plant Plant @relation(fields: [plantId], references: [id], onDelete: Cascade)
+
+  @@unique([plantId, name])
+  @@index([name])
+  @@map("plant_common_names")
+}
+
+model PlantImage {
+  id        String  @id @default(cuid())
+  plantId   String
+  url       String
+  alt       String
+  credit    String?
+  license   String?
+  sourceUrl String?
+  isPrimary Boolean @default(false)
+  position  Int     @default(0)
+
+  plant Plant @relation(fields: [plantId], references: [id], onDelete: Cascade)
+
+  @@index([plantId, position])
+  @@map("plant_images")
+}
+
+/// Fonte bibliográfica da informação botânica. Toda planta publicada deve ter ao menos uma.
+model PlantSource {
+  id         String    @id @default(cuid())
+  plantId    String
+  title      String
+  url        String?
+  publisher  String?
+  accessedAt DateTime?
+
+  plant Plant @relation(fields: [plantId], references: [id], onDelete: Cascade)
+
+  @@index([plantId])
+  @@map("plant_sources")
+}
+
+model PlantCategory {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  description String?
+  position    Int     @default(0)
+
+  plants PlantCategoryLink[]
+
+  @@map("plant_categories")
+}
+
+model PlantCategoryLink {
+  plantId    String
+  categoryId String
+
+  plant    Plant         @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  category PlantCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([plantId, categoryId])
+  @@index([categoryId])
+  @@map("plant_category_links")
+}
+
+model PlantEnvironment {
+  plantId String
+  kind    EnvironmentKind
+
+  plant Plant @relation(fields: [plantId], references: [id], onDelete: Cascade)
+
+  @@id([plantId, kind])
+  @@map("plant_environments")
+}
+
+/// Base do futuro "Qual é o problema com minha planta?" — sempre possibilidades, nunca diagnóstico.
+model PlantProblem {
+  id       String @id @default(cuid())
+  plantId  String
+  symptom  String
+  possibleCause String @db.Text
+  suggestion    String @db.Text
+
+  plant Plant @relation(fields: [plantId], references: [id], onDelete: Cascade)
+
+  @@index([plantId])
+  @@index([symptom])
+  @@map("plant_problems")
+}
+
+model PlantSimilarity {
+  fromPlantId String
+  toPlantId   String
+  note        String?
+
+  from Plant @relation("SimilarityFrom", fields: [fromPlantId], references: [id], onDelete: Cascade)
+  to   Plant @relation("SimilarityTo", fields: [toPlantId], references: [id], onDelete: Cascade)
+
+  @@id([fromPlantId, toPlantId])
+  @@index([toPlantId])
+  @@map("plant_similarities")
+}
+
+model DailyPlant {
+  id        String   @id @default(cuid())
+  date      DateTime @unique @db.Date
+  plantId   String
+  curiosity String?  @db.Text
+
+  plant Plant @relation(fields: [plantId], references: [id], onDelete: Cascade)
+
+  @@map("daily_plants")
+}
+
+// ---------------------------------------------------------------------------
+// PERSONALIZAÇÃO — Perfil Verde e recomendação
+// ---------------------------------------------------------------------------
+
+model GreenProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  housing     HousingType
+  placements  EnvironmentKind[]
+  light       LightRequirement?
+  lightUnsure Boolean           @default(false)
+  careTime    CareTime
+  experience  ExperienceLevel
+  goals       String[]
+  preferences String[]
+  hasDogs        Boolean @default(false)
+  hasCats        Boolean @default(false)
+  hasOtherPets   Boolean @default(false)
+  hasSmallKids   Boolean @default(false)
+  climate     ClimateKind @default(UNSURE)
+  space       SpaceSize
+
+  /// Rótulo calculado do perfil, ex.: "jardineiro-de-apartamento".
+  profileKey     String
+  profileLabel   String
+  profileSummary String @db.Text
+
+  completedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("green_profiles")
+}
+
+model Recommendation {
+  id      String @id @default(cuid())
+  userId  String
+  plantId String
+  /// 0–100. Sempre acompanhado das razões que o produziram.
+  score   Int
+  /// Lista de motivos legíveis, gerada pelo motor de recomendação.
+  reasons Json
+  /// Alertas exibidos junto da recomendação (ex.: toxicidade para gatos).
+  warnings Json
+  generatedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plant Plant @relation(fields: [plantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, plantId])
+  @@index([userId, score])
+  @@map("recommendations")
+}
+
+/// Sinais para o aprendizado futuro do recomendador.
+model RecommendationFeedback {
+  id        String               @id @default(cuid())
+  userId    String
+  plantId   String
+  action    RecommendationAction
+  createdAt DateTime             @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plant Plant @relation(fields: [plantId], references: [id], onDelete: Cascade)
+
+  @@index([userId, action])
+  @@index([plantId, action])
+  @@map("recommendation_feedback")
+}
+
+// ---------------------------------------------------------------------------
+// MEU JARDIM E DIÁRIO VERDE
+// ---------------------------------------------------------------------------
+
+model UserPlant {
+  id       String  @id @default(cuid())
+  userId   String
+  plantId  String?
+  /// Preenchido quando a espécie ainda não existe na base.
+  customSpeciesName String?
+  nickname String
+  photoUrl String?
+  acquiredAt DateTime?
+  location   String?
+  lightExposure LightRequirement?
+  lastWateredAt DateTime?
+  notes      String? @db.Text
+  isActive   Boolean @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plant Plant? @relation(fields: [plantId], references: [id], onDelete: SetNull)
+
+  diaryEntries DiaryEntry[]
+  reminders    ReminderPreference[]
+
+  @@index([userId, isActive])
+  @@map("user_plants")
+}
+
+model DiaryEntry {
+  id          String         @id @default(cuid())
+  userPlantId String
+  type        DiaryEntryType
+  note        String?        @db.Text
+  photoUrl    String?
+  occurredAt  DateTime       @default(now())
+  createdAt   DateTime       @default(now())
+
+  userPlant UserPlant @relation(fields: [userPlantId], references: [id], onDelete: Cascade)
+
+  @@index([userPlantId, occurredAt])
+  @@map("diary_entries")
+}
+
+model ReminderPreference {
+  id          String       @id @default(cuid())
+  userPlantId String
+  kind        ReminderKind
+  enabled     Boolean      @default(true)
+  intervalDays Int
+  preferredHour Int        @default(9)
+  lastNotifiedAt DateTime?
+
+  userPlant UserPlant @relation(fields: [userPlantId], references: [id], onDelete: Cascade)
+
+  @@unique([userPlantId, kind])
+  @@map("reminder_preferences")
+}
+
+// ---------------------------------------------------------------------------
+// REDE SOCIAL
+// ---------------------------------------------------------------------------
+
+model Post {
+  id       String   @id @default(cuid())
+  authorId String
+  type     PostType
+  caption  String   @db.Text
+  plantId  String?
+  /// Localização sempre aproximada: cidade/estado, nunca coordenadas.
+  city     String?
+  state    String?
+  stage    String?
+  allowComments Boolean @default(true)
+  status   ContentStatus @default(PUBLISHED)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  plant  Plant? @relation(fields: [plantId], references: [id], onDelete: SetNull)
+
+  images    PostImage[]
+  tags      PostTag[]
+  comments  Comment[]
+  reactions Reaction[]
+  savedItems SavedItem[]
+  collectionItems CollectionItem[]
+
+  @@index([status, createdAt])
+  @@index([authorId, createdAt])
+  @@index([plantId])
+  @@index([type, createdAt])
+  @@map("posts")
+}
+
+model PostImage {
+  id       String @id @default(cuid())
+  postId   String
+  url      String
+  alt      String
+  width    Int?
+  height   Int?
+  position Int    @default(0)
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, position])
+  @@map("post_images")
+}
+
+model PostTag {
+  postId String
+  tag    String
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tag])
+  @@index([tag])
+  @@map("post_tags")
+}
+
+model Comment {
+  id       String @id @default(cuid())
+  postId   String
+  authorId String
+  parentId String?
+  body     String @db.Text
+  status   ContentStatus @default(PUBLISHED)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  post     Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Comment[] @relation("CommentReplies")
+  reactions Reaction[]
+
+  @@index([postId, createdAt])
+  @@index([authorId])
+  @@map("comments")
+}
+
+model Reaction {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String?
+  commentId String?
+  createdAt DateTime @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@unique([userId, commentId])
+  @@index([postId])
+  @@index([commentId])
+  @@map("reactions")
+}
+
+model SavedItem {
+  id        String        @id @default(cuid())
+  userId    String
+  kind      SavedItemKind
+  plantId   String?
+  postId    String?
+  articleId String?
+  createdAt DateTime      @default(now())
+
+  user    User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plant   Plant?              @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  post    Post?               @relation(fields: [postId], references: [id], onDelete: Cascade)
+  article EducationalArticle? @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, plantId])
+  @@unique([userId, postId])
+  @@unique([userId, articleId])
+  @@index([userId, kind])
+  @@map("saved_items")
+}
+
+model Collection {
+  id          String  @id @default(cuid())
+  userId      String
+  name        String
+  slug        String
+  description String?
+  isDefault   Boolean @default(false)
+  createdAt   DateTime @default(now())
+
+  user  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CollectionItem[]
+
+  @@unique([userId, slug])
+  @@map("collections")
+}
+
+model CollectionItem {
+  collectionId String
+  plantId      String?
+  postId       String?
+  addedAt      DateTime @default(now())
+  id           String   @id @default(cuid())
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  plant      Plant?     @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  post       Post?      @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, plantId])
+  @@unique([collectionId, postId])
+  @@map("collection_items")
+}
+
+// ---------------------------------------------------------------------------
+// IDENTIFICAÇÃO POR IMAGEM
+// ---------------------------------------------------------------------------
+
+model IdentificationRequest {
+  id       String @id @default(cuid())
+  userId   String
+  imageUrl String
+  /// Órgão fotografado informado pelo usuário (folha, flor, fruto, casca, hábito).
+  organ    String?
+  note     String? @db.Text
+
+  status IdentificationStatus @default(AWAITING_PROVIDER)
+
+  providerName String?
+  /// Resposta bruta do provedor, guardada para auditoria e reprocessamento.
+  providerRaw  Json?
+  topScore     Float?
+
+  resolvedPlantId String?
+  resolvedById    String?
+  resolvedAt      DateTime?
+  adminNotes      String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user          User   @relation("IdentificationAuthor", fields: [userId], references: [id], onDelete: Cascade)
+  resolvedBy    User?  @relation("IdentificationResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolvedPlant Plant? @relation(fields: [resolvedPlantId], references: [id], onDelete: SetNull)
+
+  candidates IdentificationCandidate[]
+
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
+  @@map("identification_requests")
+}
+
+model IdentificationCandidate {
+  id        String @id @default(cuid())
+  requestId String
+  rank      Int
+  scientificName String
+  commonNames    String[]
+  family         String?
+  /// 0–1, conforme devolvido pelo provedor.
+  score     Float
+  plantId   String?
+
+  request IdentificationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  plant   Plant?                @relation(fields: [plantId], references: [id], onDelete: SetNull)
+
+  @@index([requestId, rank])
+  @@map("identification_candidates")
+}
+
+// ---------------------------------------------------------------------------
+// CONHECIMENTO COLABORATIVO — sugestão → revisão → aprovação → publicação
+// ---------------------------------------------------------------------------
+
+model PlantSuggestion {
+  id      String @id @default(cuid())
+  plantId String?
+  userId  String
+  /// Campo do modelo Plant que a sugestão pretende alterar, ou "new_plant".
+  field          String
+  currentValue   String? @db.Text
+  suggestedValue String  @db.Text
+  justification  String? @db.Text
+  sourceUrl      String?
+
+  status       SuggestionStatus @default(PENDING)
+  reviewedById String?
+  reviewedAt   DateTime?
+  reviewNote   String?          @db.Text
+
+  createdAt DateTime @default(now())
+
+  plant      Plant? @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  user       User   @relation("SuggestionAuthor", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy User?  @relation("SuggestionReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([plantId])
+  @@map("plant_suggestions")
+}
+
+// ---------------------------------------------------------------------------
+// MODERAÇÃO E AUDITORIA
+// ---------------------------------------------------------------------------
+
+model Report {
+  id         String           @id @default(cuid())
+  reporterId String
+  targetType ReportTargetType
+  targetId   String
+  reason     ReportReason
+  details    String?          @db.Text
+  status     ReportStatus     @default(OPEN)
+  handledById String?
+  handledAt   DateTime?
+  resolution  String?         @db.Text
+  createdAt   DateTime         @default(now())
+
+  reporter  User  @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  handledBy User? @relation("ReportHandler", fields: [handledById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+  @@map("reports")
+}
+
+model ModerationAction {
+  id          String   @id @default(cuid())
+  moderatorId String
+  targetType  String
+  targetId    String
+  action      String
+  reason      String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  moderator User @relation(fields: [moderatorId], references: [id], onDelete: Cascade)
+
+  @@index([targetType, targetId])
+  @@index([createdAt])
+  @@map("moderation_actions")
+}
+
+/// Histórico administrativo. Guarda o antes e o depois para auditabilidade.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String
+  before     Json?
+  after      Json?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ---------------------------------------------------------------------------
+// NOTIFICAÇÕES, CONTEÚDO EDUCATIVO, CONQUISTAS E LUGARES
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id      String           @id @default(cuid())
+  userId  String
+  type    NotificationType
+  title   String
+  body    String?          @db.Text
+  linkUrl String?
+  readAt  DateTime?
+  createdAt DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+  @@map("notifications")
+}
+
+model EducationalArticle {
+  id          String            @id @default(cuid())
+  slug        String            @unique
+  title       String
+  excerpt     String            @db.Text
+  body        String            @db.Text
+  coverUrl    String?
+  category    String
+  readingMinutes Int            @default(4)
+  status      PublicationStatus @default(DRAFT)
+  authorId    String?
+  publishedAt DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  author     User?       @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  savedItems SavedItem[]
+
+  @@index([status, publishedAt])
+  @@index([category])
+  @@map("educational_articles")
+}
+
+model Achievement {
+  id          String @id @default(cuid())
+  slug        String @unique
+  name        String
+  description String
+  icon        String
+  position    Int    @default(0)
+
+  users UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  userId        String
+  achievementId String
+  earnedAt      DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@id([userId, achievementId])
+  @@map("user_achievements")
+}
+
+/// Estabelecimentos curados manualmente. Os resultados vindos do OpenStreetMap
+/// são consultados ao vivo e não são persistidos como se fossem dados próprios.
+model Establishment {
+  id        String              @id @default(cuid())
+  source    EstablishmentSource @default(MANUAL)
+  osmId     String?             @unique
+  name      String
+  category  String
+  address   String?
+  city      String?
+  state     String?
+  latitude  Float
+  longitude Float
+  phone     String?
+  website   String?
+  openingHours String?
+  isVerified Boolean            @default(false)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  @@index([city, state])
+  @@map("establishments")
+}
+
+/// Métricas de busca (espécies mais pesquisadas). Sem dados pessoais além do autor opcional.
+model SearchLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  term      String
+  resultCount Int
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([term])
+  @@index([createdAt])
+  @@map("search_logs")
+}
+
+/// Consentimentos registrados para fins de LGPD.
+model ConsentRecord {
+  id        String   @id @default(cuid())
+  userId    String
+  kind      String
+  granted   Boolean
+  version   String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind])
+  @@map("consent_records")
+}

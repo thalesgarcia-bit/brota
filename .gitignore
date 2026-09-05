@@ -1,0 +1,42 @@
+# dependências
+/node_modules
+/.pnp
+.pnp.*
+
+# build
+/.next/
+/out/
+/build
+next-env.d.ts.timestamp
+*.tsbuildinfo
+
+# ambiente — NUNCA versionar segredos
+.env
+.env.local
+.env.*.local
+
+# uploads locais (armazenamento de desenvolvimento)
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# testes
+/coverage
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
+
+# sistema
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# prisma
+/prisma/*.db
+/prisma/*.db-journal
