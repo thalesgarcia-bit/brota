@@ -3,12 +3,25 @@
 // Regra: informação botânica oficial nunca se mistura com opinião da comunidade.
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  // driverAdapters permite trocar o driver de conexão do Prisma. É o que torna
+  // possível rodar em plataformas sem soquete TCP tradicional, como os
+  // Cloudflare Workers.
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+
+  // Conexão da aplicação: passa pelo pooler (porta 6543). Em servidor
+  // serverless, cada requisição pode abrir uma conexão nova — sem o pooler o
+  // banco esgota o limite em minutos.
+  url = env("DATABASE_URL")
+
+  // Conexão direta (porta 5432): usada apenas pelo Prisma CLI para criar e
+  // aplicar migrations. O pooler opera em modo transação e não suporta os
+  // comandos que uma migration precisa executar.
+  directUrl = env("DIRECT_URL")
 }
 
 // ---------------------------------------------------------------------------

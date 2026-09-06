@@ -24,6 +24,12 @@ if (existsSync('.env.local')) {
   const value = (key) => (env.match(new RegExp(`^${key}="?([^"\n]*)"?`, 'm')) ?? [])[1] ?? '';
 
   if (!value('DATABASE_URL')) problems.push('DATABASE_URL está vazia no .env.local.');
+  if (!value('DIRECT_URL')) {
+    notes.push('DIRECT_URL está vazia. Sem ela o `npm run db:deploy` falha — é a conexão direta (porta 5432) que o Prisma usa para criar as tabelas.');
+  }
+  if (value('DATABASE_URL').includes(':5432') && value('DATABASE_URL').includes('pooler')) {
+    notes.push('A DATABASE_URL parece estar usando a porta 5432. Para a aplicação, use a porta 6543 (pooler); deixe a 5432 para a DIRECT_URL.');
+  }
 
   const secret = value('AUTH_SECRET');
   if (!secret || secret.includes('troque')) {

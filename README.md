@@ -24,7 +24,7 @@ Escola Criativa de Uberaba**, em parceria com as **Profas. Mikaella de Sousa** e
 | Linguagem | TypeScript em modo estrito |
 | Interface | React 19 + Tailwind CSS v4 (design system próprio, sem biblioteca de componentes) |
 | Ícones | Conjunto SVG próprio (`src/components/ui/icon.tsx`) — zero dependência |
-| Banco | PostgreSQL 16 + Prisma ORM |
+| Banco | PostgreSQL 16 + Prisma ORM (driver adapter `@prisma/adapter-pg`) |
 | Autenticação | Auth.js v5 (credenciais com bcrypt, sessão JWT, RBAC no servidor) |
 | Validação | Zod (mesmos esquemas no cliente e no servidor) |
 | Formulários | React Hook Form + Server Actions |
@@ -78,9 +78,16 @@ Preencha os valores. O mínimo para rodar:
 
 ```env
 DATABASE_URL="postgresql://brota:brota@localhost:5432/brota?schema=public"
+DIRECT_URL="postgresql://brota:brota@localhost:5432/brota?schema=public"
 AUTH_SECRET="<gere com: npx auth secret>"
 NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 ```
+
+**Duas conexões, não uma.** `DATABASE_URL` é o que a aplicação usa e passa pelo
+pooler; `DIRECT_URL` é a conexão direta que o Prisma CLI usa para criar as
+migrations, porque o pooler opera em modo transação e não aceita esses comandos.
+Em Postgres local as duas apontam para o mesmo lugar. No Supabase, mudam só na
+porta — 6543 para a aplicação, 5432 para as migrations.
 
 ### 5. Migrations e dados iniciais
 
@@ -128,7 +135,8 @@ Todas estão documentadas em [`.env.example`](./.env.example). As essenciais:
 
 | Variável | Obrigatória | Descrição |
 | --- | --- | --- |
-| `DATABASE_URL` | sim | Conexão PostgreSQL |
+| `DATABASE_URL` | sim | Conexão da aplicação — pooler, porta 6543 no Supabase |
+| `DIRECT_URL` | sim | Conexão direta, porta 5432 — usada só pelas migrations |
 | `AUTH_SECRET` | sim | Segredo de assinatura das sessões |
 | `NEXT_PUBLIC_SITE_URL` | sim | URL pública, usada em metadados e links de e-mail |
 | `PLANT_ID_PROVIDER` | não | `plantnet` ou `none` |
@@ -273,7 +281,7 @@ operação entregue junto ao projeto.
    `DATABASE_URL`, `AUTH_SECRET`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
    `SUPABASE_STORAGE_BUCKET`, `STORAGE_PROVIDER=supabase`,
    `NEXT_PUBLIC_SITE_URL`, `PLANTNET_API_KEY`, `PLANT_ID_PROVIDER=plantnet`,
-   `AUTH_TRUST_HOST=true`.
+   `AUTH_TRUST_HOST=true` e `DIRECT_URL`.
 5. **Banco** — uma única vez, da sua máquina: `npm run db:deploy && npm run db:seed`.
 
 ```bash

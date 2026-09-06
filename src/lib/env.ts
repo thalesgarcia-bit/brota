@@ -12,7 +12,10 @@ const booleanish = z
 const serverSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 
+  // Conexão da aplicação — passa pelo pooler do Supabase (porta 6543).
   DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
+  // Conexão direta (porta 5432) — usada só pelo Prisma CLI nas migrations.
+  DIRECT_URL: z.string().default(''),
 
   AUTH_SECRET: z
     .string()
