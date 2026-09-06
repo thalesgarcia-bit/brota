@@ -10,6 +10,12 @@
 next-env.d.ts.timestamp
 *.tsbuildinfo
 
+# saida do build para Cloudflare — o OpenNext copia o projeto inteiro
+# (inclusive a pasta .git) para dentro de .open-next. Versionar isso faz o
+# Git registrar um submodulo fantasma e quebra o clone no Cloudflare.
+/.open-next/
+/.wrangler/
+
 # ambiente — NUNCA versionar segredos
 .env
 .env.local
