@@ -12,6 +12,22 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ['date-fns'],
+
+    // Antes de executar qualquer formulário, o Next confere se o endereço de
+    // origem do envio bate com o host da requisição — é a proteção contra
+    // envio forjado de outro site. Atrás de um proxy como o Cloudflare, o
+    // host que chega ao servidor pode não ser o que o navegador enxerga, e o
+    // Next recusa o envio antes de entregar o controle à aplicação: erro 500
+    // sem nenhuma linha do nosso código rodar.
+    //
+    // Declarar os domínios legítimos resolve. Ao publicar em domínio próprio,
+    // acrescente-o a esta lista.
+    serverActions: {
+      allowedOrigins: [
+        'brota.criativaura.workers.dev',
+        'localhost:3000',
+      ],
+    },
   },
 
   // O Prisma precisa chegar inteiro ao runtime do workerd: se o Next

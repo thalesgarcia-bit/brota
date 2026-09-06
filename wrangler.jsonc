@@ -18,9 +18,34 @@
 
   "observability": {
     "enabled": true
-  }
+  },
 
-  // As variáveis de ambiente NÃO ficam aqui — elas contêm segredos.
-  // Defina no painel: Workers & Pages > brota > Settings > Variables,
-  // ou pela linha de comando com `npx wrangler secret put NOME_DA_VARIAVEL`.
+  // ---------------------------------------------------------------------
+  // CONFIGURAÇÃO PÚBLICA
+  //
+  // Estas variáveis precisam ficar AQUI, e não no painel. A cada publicação,
+  // o Wrangler substitui a lista de variáveis comuns do Worker pela que está
+  // neste arquivo — o que for definido só no painel é apagado no deploy
+  // seguinte. Segredos são exceção: sobrevivem, e por isso continuam fora
+  // daqui (AUTH_SECRET, DATABASE_URL, DIRECT_URL, PLANTNET_API_KEY e
+  // SUPABASE_SERVICE_ROLE_KEY ficam no painel, como Secret).
+  //
+  // Nada nesta lista é sigiloso: são endereços públicos e chaves de escolha.
+  // ---------------------------------------------------------------------
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://brota.criativaura.workers.dev",
+
+    // Fotos: armazenadas no Supabase, no bucket público `brota`.
+    "STORAGE_PROVIDER": "supabase",
+    "SUPABASE_URL": "https://bmstmxxcqsvuprgbqpyx.supabase.co",
+    "SUPABASE_STORAGE_BUCKET": "brota",
+
+    // Identificação por foto: liga o provedor Pl@ntNet. Sem esta linha, a
+    // chave sozinha não ativa o recurso.
+    "PLANT_ID_PROVIDER": "plantnet",
+
+    // Mapa de floriculturas: instância do Overpass que aceita requisições
+    // vindas de datacenter, ao contrário do endereço padrão.
+    "OVERPASS_API_URL": "https://overpass.kumi.systems/api/interpreter"
+  }
 }
