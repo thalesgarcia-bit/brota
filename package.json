@@ -24,7 +24,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install --with-deps chromium",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "check:plantnet": "node scripts/check-plantnet.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed/index.ts"
@@ -45,6 +46,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
     "@hookform/resolvers": "^3.9.1",
     "@playwright/test": "^1.49.0",
     "@tailwindcss/postcss": "^4.0.0",

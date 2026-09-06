@@ -169,6 +169,7 @@ export async function suggestPlants(term: string, limit = 8) {
       ],
     },
     select: {
+      id: true,
       slug: true,
       scientificName: true,
       commonNames: { where: { isPrimary: true }, select: { name: true }, take: 1 },

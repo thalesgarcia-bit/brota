@@ -4,6 +4,7 @@ import { Fraunces, Inter } from 'next/font/google';
 import '@/styles/globals.css';
 import { ToastProvider } from '@/components/ui/toast';
 import { SkipLink } from '@/components/layout/skip-link';
+import { ServiceWorkerRegistration } from '@/components/pwa/service-worker';
 import { clientEnv } from '@/lib/env';
 
 const inter = Inter({
@@ -86,6 +87,7 @@ export default function RootLayout({
       <body>
         <SkipLink />
         <ToastProvider>{children}</ToastProvider>
+        <ServiceWorkerRegistration />
       </body>
     </html>
   );
