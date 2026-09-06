@@ -4,8 +4,10 @@ import { assertValidImage, detectImageMime } from '@/domain/storage/validate';
 import { UploadError } from '@/domain/storage/types';
 
 /**
- * O upload valida pelo conteúdo do arquivo, não pela extensão. Estes testes
- * garantem que um arquivo renomeado para .jpg não passe.
+ * O upload valida pelo conteúdo do arquivo, não pela extensão nem pelo
+ * Content-Type. A imagem chega comprimida do navegador, mas nada do que vem
+ * do cliente é considerado confiável: estes testes garantem que um arquivo
+ * renomeado para .jpg não passe.
  */
 
 function withHeader(bytes: number[]): Buffer {

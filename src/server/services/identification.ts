@@ -24,16 +24,32 @@ import { findPlantByScientificName } from '@/server/services/plants';
  *                                  fila administrativa
  * =========================================================================== */
 
-/** Lê do armazenamento local a imagem já processada, para enviar ao provedor. */
-async function loadStoredImage(publicUrl: string): Promise<Blob> {
+/**
+ * Carrega a imagem já armazenada para enviá-la ao provedor de identificação.
+ *
+ * Aceita as duas formas que o armazenamento produz: um caminho local, durante
+ * o desenvolvimento, e uma URL pública, quando as fotos estão no Supabase.
+ */
+async function loadStoredImage(imageUrl: string): Promise<Blob> {
+  if (/^https?:\/\//.test(imageUrl)) {
+    const response = await fetch(imageUrl, { signal: AbortSignal.timeout(20_000) });
+    if (!response.ok) {
+      throw new IdentificationError(
+        'image_rejected',
+        `Não foi possível recuperar a imagem armazenada (HTTP ${response.status}).`,
+      );
+    }
+    return response.blob();
+  }
+
   const env = serverEnv();
   const prefix = env.STORAGE_PUBLIC_PREFIX.replace(/\/$/, '');
 
-  if (!publicUrl.startsWith(`${prefix}/`)) {
+  if (!imageUrl.startsWith(`${prefix}/`)) {
     throw new IdentificationError('image_rejected', 'Caminho de imagem inválido.');
   }
 
-  const relative = publicUrl.slice(prefix.length + 1);
+  const relative = imageUrl.slice(prefix.length + 1);
   const baseDir = path.resolve(process.cwd(), env.STORAGE_LOCAL_DIR);
   const target = path.resolve(baseDir, relative);
 

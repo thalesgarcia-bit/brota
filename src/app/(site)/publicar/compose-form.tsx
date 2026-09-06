@@ -11,6 +11,7 @@ import { Alert } from '@/components/ui/feedback';
 import { Icon } from '@/components/ui/icon';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils/cn';
+import { ImageCompressionError, uploadImage } from '@/lib/image/compress';
 import { POST_TYPES } from '@/lib/validation/post';
 import { createPostAction } from '@/server/actions/posts';
 
@@ -49,20 +50,16 @@ export function ComposeForm({
     setUploading(true);
 
     for (const file of Array.from(files).slice(0, remaining)) {
-      const body = new FormData();
-      body.append('file', file);
-      body.append('folder', 'posts');
-
       try {
-        const response = await fetch('/api/upload', { method: 'POST', body });
-        const payload = (await response.json()) as { url?: string; error?: string };
-        if (!response.ok || !payload.url) {
-          notify(payload.error ?? 'Não conseguimos enviar uma das fotos.', 'error');
-          continue;
-        }
-        setImages((current) => [...current, payload.url!]);
-      } catch {
-        notify('Falha ao enviar a foto. Verifique sua conexão.', 'error');
+        const stored = await uploadImage(file, 'posts');
+        setImages((current) => [...current, stored.url]);
+      } catch (failure) {
+        notify(
+          failure instanceof ImageCompressionError
+            ? failure.message
+            : 'Falha ao enviar a foto. Verifique sua conexão.',
+          'error',
+        );
       }
     }
 

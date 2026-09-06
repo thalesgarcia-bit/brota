@@ -10,6 +10,7 @@ import { Alert, LoadingRegion } from '@/components/ui/feedback';
 import { Icon } from '@/components/ui/icon';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils/cn';
+import { ImageCompressionError, uploadImage } from '@/lib/image/compress';
 import { PLANT_ORGANS } from '@/lib/validation/identification';
 import {
   escalateIdentificationAction,
@@ -53,24 +54,16 @@ export function IdentifyPanel({
     setPreview(URL.createObjectURL(file));
     setStage('uploading');
 
-    const body = new FormData();
-    body.append('file', file);
-    body.append('folder', 'identifications');
-
     try {
-      const response = await fetch('/api/upload', { method: 'POST', body });
-      const payload = (await response.json()) as { url?: string; error?: string };
-
-      if (!response.ok || !payload.url) {
-        setError(payload.error ?? 'Não conseguimos enviar essa imagem.');
-        setStage('idle');
-        return;
-      }
-
-      setImageUrl(payload.url);
+      const stored = await uploadImage(file, 'identifications');
+      setImageUrl(stored.url);
       setStage('idle');
-    } catch {
-      setError('Não conseguimos enviar a imagem. Verifique sua conexão.');
+    } catch (uploadFailure) {
+      setError(
+        uploadFailure instanceof ImageCompressionError
+          ? uploadFailure.message
+          : 'Não conseguimos enviar a imagem. Verifique sua conexão.',
+      );
       setStage('idle');
     }
   }

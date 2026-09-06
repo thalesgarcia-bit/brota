@@ -7,6 +7,7 @@ import {
   serverEnv,
 } from '@/lib/env';
 import { mailStatus } from '@/domain/mail';
+import { storageStatus } from '@/domain/storage';
 import { Badge } from '@/components/ui/badge';
 import { Alert } from '@/components/ui/feedback';
 import { Icon } from '@/components/ui/icon';
@@ -29,6 +30,7 @@ export default async function AdminSettingsPage() {
   const identification = plantIdentificationStatus();
   const places = placesStatus();
   const mail = mailStatus();
+  const storage = storageStatus();
 
   const services = [
     {
@@ -61,11 +63,12 @@ export default async function AdminSettingsPage() {
     },
     {
       name: 'Armazenamento de imagens',
-      provider: env.STORAGE_PROVIDER,
-      configured: true,
+      provider: storage.provider,
+      configured: storage.provider === 'supabase' && storage.configured,
+      reason: storage.reason,
       howTo:
-        'O adapter local grava em public/uploads. Antes de publicar em plataforma efêmera, implemente um adapter S3 ou R2.',
-      detail: `Limite por arquivo: ${env.MAX_UPLOAD_MB} MB.`,
+        'Crie um bucket público no Supabase (Storage > New bucket), defina STORAGE_PROVIDER="supabase", SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.',
+      detail: `Limite por arquivo: ${env.MAX_UPLOAD_MB} MB. As fotos são comprimidas e convertidas para WebP no próprio navegador antes do envio.`,
     },
   ];
 

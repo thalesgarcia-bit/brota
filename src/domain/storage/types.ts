@@ -1,5 +1,5 @@
 export type StoredImage = {
-  /** Caminho público servido pela aplicação, ex.: /uploads/2026/09/abc.webp */
+  /** Caminho público servido pela aplicação ou pelo CDN. */
   url: string;
   /** Miniatura usada em listas e no feed. */
   thumbnailUrl: string;
@@ -9,8 +9,13 @@ export type StoredImage = {
 };
 
 export type StoreImageInput = {
+  /** Imagem já comprimida e convertida para WebP pelo navegador. */
   buffer: Buffer;
-  /** Nome original, usado apenas para extrair extensão e registrar. */
+  /** Miniatura, quando o cliente conseguiu gerá-la. */
+  thumbnail?: Buffer;
+  width?: number;
+  height?: number;
+  /** Nome original, guardado apenas para registro. */
   originalName: string;
   /** Pasta lógica: "posts", "plants", "avatars", "garden", "identifications". */
   folder: string;

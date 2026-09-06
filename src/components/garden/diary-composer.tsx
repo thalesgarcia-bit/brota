@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/input';
 import { Icon } from '@/components/ui/icon';
 import { useToast } from '@/components/ui/toast';
 import { cn } from '@/lib/utils/cn';
+import { ImageCompressionError, uploadImage } from '@/lib/image/compress';
 import { DIARY_ENTRY_TYPES } from '@/lib/validation/garden';
 import { DIARY_TYPE } from '@/lib/labels';
 import { createDiaryEntryAction } from '@/server/actions/garden';
@@ -27,21 +28,18 @@ export function DiaryComposer({ userPlantId }: { userPlantId: string }) {
 
   async function uploadPhoto(file: File) {
     setUploading(true);
-    const body = new FormData();
-    body.append('file', file);
-    body.append('folder', 'garden');
 
     try {
-      const response = await fetch('/api/upload', { method: 'POST', body });
-      const payload = (await response.json()) as { url?: string; error?: string };
-      if (!response.ok || !payload.url) {
-        notify(payload.error ?? 'Não conseguimos enviar a foto.', 'error');
-        return;
-      }
-      setPhotoUrl(payload.url);
+      const stored = await uploadImage(file, 'garden');
+      setPhotoUrl(stored.url);
       setExpanded(true);
-    } catch {
-      notify('Não conseguimos enviar a foto. Verifique sua conexão.', 'error');
+    } catch (failure) {
+      notify(
+        failure instanceof ImageCompressionError
+          ? failure.message
+          : 'Não conseguimos enviar a foto. Verifique sua conexão.',
+        'error',
+      );
     } finally {
       setUploading(false);
     }

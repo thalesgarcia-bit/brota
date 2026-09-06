@@ -2,8 +2,6 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import sharp from 'sharp';
-
 import {
   UploadError,
   type StorageProvider,
@@ -12,10 +10,14 @@ import {
 } from './types';
 
 /**
- * Armazenamento em disco para desenvolvimento e para instalações pequenas.
+ * Armazenamento em disco — para desenvolvimento local.
  *
- * A interface StorageProvider isola o resto do sistema: trocar por S3,
- * Cloudflare R2 ou um CDN é escrever outro adapter, sem tocar nas páginas.
+ * Em produção o disco do servidor é apagado a cada publicação, então este
+ * adapter serve apenas na sua máquina. O `SupabaseStorageProvider` é quem
+ * atende o site publicado.
+ *
+ * A imagem chega aqui já comprimida e convertida para WebP pelo navegador:
+ * o servidor apenas confere e grava.
  */
 export class LocalStorageProvider implements StorageProvider {
   readonly name = 'local';
@@ -48,39 +50,25 @@ export class LocalStorageProvider implements StorageProvider {
     const thumbName = `${id}-thumb.webp`;
 
     try {
-      // rotate() aplica a orientação EXIF antes de redimensionar: sem isso,
-      // fotos tiradas na vertical chegam deitadas.
-      const pipeline = sharp(input.buffer, { failOn: 'error' }).rotate();
-      const metadata = await pipeline.metadata();
-
-      const full = await pipeline
-        .clone()
-        .resize({ width: 1600, height: 1600, fit: 'inside', withoutEnlargement: true })
-        .webp({ quality: 82 })
-        .toBuffer({ resolveWithObject: true });
-
-      const thumb = await pipeline
-        .clone()
-        .resize({ width: 480, height: 480, fit: 'cover', position: 'attention' })
-        .webp({ quality: 72 })
-        .toBuffer();
-
-      await writeFile(path.join(targetDir, fileName), full.data);
-      await writeFile(path.join(targetDir, thumbName), thumb);
-
-      const publicDir = `${this.publicPrefix}/${relativeDir.split(path.sep).join('/')}`;
-
-      return {
-        url: `${publicDir}/${fileName}`,
-        thumbnailUrl: `${publicDir}/${thumbName}`,
-        width: full.info.width ?? metadata.width ?? 0,
-        height: full.info.height ?? metadata.height ?? 0,
-        bytes: full.data.byteLength,
-      };
+      await writeFile(path.join(targetDir, fileName), input.buffer);
+      if (input.thumbnail) {
+        await writeFile(path.join(targetDir, thumbName), input.thumbnail);
+      }
     } catch (error) {
-      if (error instanceof UploadError) throw error;
-      throw new UploadError('corrupted', (error as Error).message);
+      throw new UploadError('write_failed', (error as Error).message);
     }
+
+    const publicDir = `${this.publicPrefix}/${relativeDir.split(path.sep).join('/')}`;
+
+    return {
+      url: `${publicDir}/${fileName}`,
+      thumbnailUrl: input.thumbnail
+        ? `${publicDir}/${thumbName}`
+        : `${publicDir}/${fileName}`,
+      width: input.width ?? 0,
+      height: input.height ?? 0,
+      bytes: input.buffer.byteLength,
+    };
   }
 
   async remove(url: string): Promise<void> {

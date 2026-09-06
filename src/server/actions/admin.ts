@@ -5,6 +5,7 @@ import type { Role } from '@prisma/client';
 
 import { prisma } from '@/lib/db/prisma';
 import { assertPermission, AuthorizationError } from '@/lib/auth/session';
+import { hashPassword } from '@/lib/auth/password';
 import {
   handleReportSchema,
   reviewSuggestionSchema,
@@ -383,4 +384,99 @@ export async function setPlantDataQualityAction(
   revalidatePath(`/plantas/${plant.slug}`);
 
   return { ok: true, message: 'Situação da ficha atualizada.' };
+}
+
+/**
+ * Redefine a senha de um usuário e devolve uma senha temporária.
+ *
+ * Por que isto existe: o BROTA ainda não tem provedor de e-mail configurado,
+ * então o link de recuperação não chega a ninguém. Num contexto escolar isso
+ * seria um bloqueio real — aluno que esquece a senha ficaria sem acesso.
+ *
+ * Aqui o professor gera uma senha temporária, entrega em mãos e o aluno troca
+ * depois em Configurações. A senha aparece uma única vez na tela: no banco só
+ * fica o hash, como qualquer outra.
+ */
+export async function resetUserPasswordAction(
+  userId: string,
+): Promise<Result & { temporaryPassword?: string }> {
+  let staff;
+  try {
+    staff = await assertPermission('admin:manage_users');
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      return { ok: false, message: error.message };
+    }
+    throw error;
+  }
+
+  const target = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, deletedAt: true, role: true },
+  });
+
+  if (!target || target.deletedAt) {
+    return { ok: false, message: 'Usuário não encontrado.' };
+  }
+
+  // Outro administrador não tem a senha redefinida por aqui — seria uma porta
+  // fácil demais para tomar a conta de quem tem mais poder.
+  if (target.role === 'ADMIN' && target.id !== staff.id) {
+    return {
+      ok: false,
+      message:
+        'Contas de administrador não podem ter a senha redefinida por outro administrador.',
+    };
+  }
+
+  const temporaryPassword = generateTemporaryPassword();
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { passwordHash: await hashPassword(temporaryPassword) },
+  });
+
+  await prisma.notification.create({
+    data: {
+      userId,
+      type: 'ADMIN_NOTICE',
+      title: 'Sua senha foi redefinida',
+      body: 'A equipe gerou uma senha temporária para você. Troque por uma senha sua em Configurações.',
+      linkUrl: '/configuracoes',
+    },
+  });
+
+  await prisma.auditLog.create({
+    data: {
+      actorId: staff.id,
+      action: 'user.password_reset',
+      entityType: 'User',
+      entityId: userId,
+      after: { by: staff.id },
+    },
+  });
+
+  revalidatePath('/admin/usuarios');
+
+  return {
+    ok: true,
+    message: 'Senha redefinida. Anote agora — ela não aparece de novo.',
+    temporaryPassword,
+  };
+}
+
+/**
+ * Senha temporária fácil de ditar em voz alta: duas palavras e três dígitos,
+ * sem caracteres que se confundem ao ler.
+ */
+function generateTemporaryPassword(): string {
+  const words = [
+    'broto', 'folha', 'raiz', 'flor', 'seiva', 'caule', 'fruto', 'semente',
+    'jardim', 'verde', 'orvalho', 'cacto', 'musgo', 'poda', 'vaso', 'terra',
+  ];
+
+  const pick = () => words[Math.floor(Math.random() * words.length)] as string;
+  const digits = String(Math.floor(Math.random() * 900) + 100);
+
+  return `${pick()}-${pick()}${digits}`;
 }

@@ -1,0 +1,26 @@
+{
+  // Configuração do Cloudflare Workers para o BROTA.
+  // O build é feito pelo adapter OpenNext, que traduz a saída do Next.js
+  // para o formato que os Workers entendem.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "brota",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-09-01",
+
+  // nodejs_compat dá ao Worker as APIs do Node que o Next.js e o Prisma usam.
+  // global_fetch_strictly_public evita que chamadas internas curto-circuitem.
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+
+  // As variáveis de ambiente NÃO ficam aqui — elas contêm segredos.
+  // Defina no painel: Workers & Pages > brota > Settings > Variables,
+  // ou pela linha de comando com `npx wrangler secret put NOME_DA_VARIAVEL`.
+}

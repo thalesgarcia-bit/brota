@@ -31,10 +31,14 @@ const serverSchema = z.object({
   NOMINATIM_API_URL: z.string().url().default('https://nominatim.openstreetmap.org'),
   OSM_USER_AGENT: z.string().default('BROTA/0.1'),
 
-  STORAGE_PROVIDER: z.enum(['local']).default('local'),
+  STORAGE_PROVIDER: z.enum(['local', 'supabase']).default('local'),
   STORAGE_LOCAL_DIR: z.string().default('./public/uploads'),
   STORAGE_PUBLIC_PREFIX: z.string().default('/uploads'),
   MAX_UPLOAD_MB: z.coerce.number().int().positive().max(50).default(8),
+
+  SUPABASE_URL: z.string().default(''),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().default(''),
+  SUPABASE_STORAGE_BUCKET: z.string().default('brota'),
 
   SEED_ADMIN_EMAIL: z.string().email().default('admin@brota.local'),
   SEED_ADMIN_PASSWORD: z.string().min(8).default('brota-admin-2026'),

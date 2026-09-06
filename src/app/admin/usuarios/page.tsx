@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/feedback';
 import { Alert } from '@/components/ui/feedback';
 import { formatDate } from '@/lib/utils/format';
 import { RoleControl } from '@/components/admin/role-control';
+import { PasswordResetButton } from '@/components/admin/password-reset-button';
 
 export const metadata: Metadata = {
   title: 'Usuários',
@@ -130,11 +131,18 @@ export default async function AdminUsersPage({
                   </p>
                 </div>
 
-                <RoleControl
-                  userId={user.id}
-                  role={user.role}
-                  disabled={user.id === staff.id}
-                />
+                <div className="flex items-center gap-2">
+                  <PasswordResetButton
+                    userId={user.id}
+                    userName={user.profile?.displayName ?? user.email}
+                    disabled={user.role === 'ADMIN' && user.id !== staff.id}
+                  />
+                  <RoleControl
+                    userId={user.id}
+                    role={user.role}
+                    disabled={user.id === staff.id}
+                  />
+                </div>
               </li>
             ))}
           </ul>

@@ -21,6 +21,7 @@ const ACTION_LABELS: Record<string, string> = {
   'identification.resolve': 'Resolveu identificação',
   'report.handle': 'Tratou denúncia',
   'user.role_change': 'Alterou papel de usuário',
+  'user.password_reset': 'Redefiniu a senha de um usuário',
   'password.change': 'Alterou a própria senha',
   'password.reset': 'Redefiniu senha',
   'account.delete': 'Excluiu conta',
