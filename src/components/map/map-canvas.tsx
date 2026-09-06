@@ -32,7 +32,6 @@ export function MapCanvas({
   const mapRef = useRef<LeafletMap | null>(null);
   const markersRef = useRef<Map<string, Marker>>(new Map());
   const selectHandler = useRef(onSelect);
-
   selectHandler.current = onSelect;
 
   // Cria o mapa uma única vez.
@@ -47,9 +46,8 @@ export function MapCanvas({
         center: [center.lat, center.lon],
         zoom: 14,
         scrollWheelZoom: false,
-        // No toque, o arrasto com um dedo rola a página; dois dedos movem o mapa.
+        // No toque, o arrasto com um dedo rola a página.
         dragging: !L.Browser.mobile,
-        tap: false,
       });
 
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -133,11 +131,13 @@ export function MapCanvas({
             (place) => [place.latitude, place.longitude] as [number, number],
           ),
         ]);
+
         map.fitBounds(bounds, { padding: [32, 32], maxZoom: 16 });
       }
     }
 
     void sync();
+
     return () => {
       cancelled = true;
     };
@@ -146,6 +146,7 @@ export function MapCanvas({
   // Destaca o marcador escolhido na lista.
   useEffect(() => {
     if (!selectedId) return;
+
     const marker = markersRef.current.get(selectedId);
     const map = mapRef.current;
     if (!marker || !map) return;
