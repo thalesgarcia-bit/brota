@@ -3,7 +3,9 @@ import type { MetadataRoute } from 'next';
 import { prisma } from '@/lib/db/prisma';
 import { clientEnv } from '@/lib/env';
 
-export const revalidate = 3600;
+// O sitemap consulta o banco e deve ser gerado no runtime do Cloudflare Worker,
+// não durante o build do Next.js.
+export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = clientEnv.NEXT_PUBLIC_SITE_URL;
