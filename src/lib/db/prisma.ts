@@ -1,9 +1,13 @@
 import 'server-only';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@/generated/prisma/client';
 
 /* ===========================================================================
  * CLIENTE DO BANCO
+ *
+ * O PrismaClient abaixo vem do gerador específico para Cloudflare definido
+ * no schema.prisma. Os imports de tipos/enums existentes em @prisma/client
+ * continuam compatíveis pelo gerador legado mantido em paralelo.
  *
  * O Prisma é configurado com o driver adapter do PostgreSQL em vez do motor
  * nativo. Isso importa por dois motivos:
