@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import type { IdentificationStatus } from '@prisma/client';
 
 import { Button } from '@/components/ui/button';
@@ -280,16 +281,16 @@ function RequestCard({
               </Button>
             </div>
 
-            <p className="mt-3 text-xs text-ink-500">
-              A espécie não está na base?{' '}
-              <a href="/admin/plantas/nova" className="text-brand-700 underline">
-                Cadastre a nova espécie
-              </a>{' '}
-              e volte para vincular.
-            </p>
-          </section>
-        </div>
-      </div>
-    </article>
-  );
+       <p className="mt-3 text-xs text-ink-500">
+  A espécie não está na base?{' '}
+  <Link href="/admin/plantas/nova" className="text-brand-700 underline">
+    Cadastre a nova espécie
+  </Link>{' '}
+  e volte para vincular.
+</p>
+</section>
+</div>
+</div>
+</article>
+);
 }
