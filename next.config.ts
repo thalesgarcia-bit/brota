@@ -13,6 +13,26 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['date-fns'],
   },
+
+  // O Prisma Client gerado para Cloudflare importa o query compiler como
+  // WebAssembly. O Next.js usa Webpack no build e o suporte a WASM assíncrono
+  // não vem habilitado por padrão.
+  webpack(config) {
+    config.experiments = {
+      ...config.experiments,
+      asyncWebAssembly: true,
+    };
+
+    // Limita a regra aos módulos WASM importados com `?module`, exatamente o
+    // formato emitido pelo Prisma para o runtime Cloudflare.
+    config.module.rules.push({
+      test: /\.wasm$/,
+      resourceQuery: /module/,
+      type: 'webassembly/async',
+    });
+
+    return config;
+  },
   async headers() {
     return [
       {
