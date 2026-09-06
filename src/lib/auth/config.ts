@@ -25,9 +25,11 @@ export const authConfig = {
     },
     session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id ?? (token.sub as string);
+        session.user.id =
+          typeof token.id === 'string' ? token.id : (token.sub ?? '');
         session.user.role = (token.role ?? 'USER') as Role;
-        session.user.username = token.username ?? null;
+        session.user.username =
+          typeof token.username === 'string' ? token.username : null;
         session.user.hasGreenProfile = Boolean(token.hasGreenProfile);
       }
       return session;
