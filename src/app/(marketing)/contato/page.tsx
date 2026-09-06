@@ -74,7 +74,7 @@ export default function ContactPage() {
           <p className="mt-2 text-ink-600">
             Escola Criativa de Uberaba — disciplina de Projeto de Vida.
             <br />
-            Coordenação do projeto: Prof. Thales Garcia.
+            Coordenação do projeto: Profª Carol Manhezzo.
           </p>
           <p className="mt-3 text-sm text-ink-500">
             O endereço de e-mail para contato ainda será definido pela equipe e

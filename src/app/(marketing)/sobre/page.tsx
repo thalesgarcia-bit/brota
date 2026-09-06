@@ -94,10 +94,10 @@ export default function AboutPage() {
             <dl className="mt-5 space-y-5">
               <div>
                 <dt className="text-xs tracking-wide text-ink-500 uppercase">
-                  Idealização e orientação
+                  Idealização
                 </dt>
                 <dd className="mt-1 text-lg font-medium text-ink-900">
-                  Prof. Thales Garcia
+                  Turma do 9º ano da Escola Criativa de Uberaba
                 </dd>
               </div>
 
@@ -105,8 +105,9 @@ export default function AboutPage() {
                 <dt className="text-xs tracking-wide text-ink-500 uppercase">
                   Desenvolvimento
                 </dt>
-                <dd className="mt-1 text-lg font-medium text-ink-900">
-                  Alunos do 9º ano da Escola Criativa de Uberaba
+                <dd className="mt-1 space-y-0.5 text-lg font-medium text-ink-900">
+                  <p>Prof. Thales Garcia</p>
+                  <p>Turma do 9º ano</p>
                 </dd>
               </div>
 
@@ -115,8 +116,9 @@ export default function AboutPage() {
                   Parceria
                 </dt>
                 <dd className="mt-1 space-y-0.5 text-lg font-medium text-ink-900">
-                  <p>Profª Mikaella de Sousa</p>
                   <p>Profª Carol Manhezzo</p>
+                  <p>Profª Mikaella de Sousa</p>
+                  <p>Prof. Thales Garcia</p>
                 </dd>
               </div>
 
@@ -128,13 +130,23 @@ export default function AboutPage() {
                   Projeto de Vida
                 </dd>
               </div>
+
+              <div>
+                <dt className="text-xs tracking-wide text-ink-500 uppercase">
+                  Coordenação
+                </dt>
+                <dd className="mt-1 text-lg font-medium text-ink-900">
+                  Profª Carol Manhezzo
+                </dd>
+              </div>
             </dl>
 
             <p className="mt-6 border-t border-ink-100 pt-5 text-sm leading-relaxed text-ink-600">
-              O BROTA foi desenvolvido pelo Prof. Thales Garcia e pelos alunos do
-              9º ano da Escola Criativa de Uberaba, em parceria com as Profas.
-              Mikaella de Sousa e Carol Manhezzo, a partir de uma atividade
-              desenvolvida na disciplina de Projeto de Vida.
+              O BROTA foi idealizado pela turma do 9º ano da Escola Criativa de
+              Uberaba e desenvolvido pelos estudantes com o Prof. Thales Garcia,
+              em parceria com a Profª Carol Manhezzo, a Profª Mikaella de Sousa
+              e o Prof. Thales Garcia, na disciplina de Projeto de Vida.
+              Coordenação da Profª Carol Manhezzo.
             </p>
           </div>
         </div>
@@ -166,10 +178,8 @@ export default function AboutPage() {
             <h2 className="text-2xl sm:text-3xl">A tecnologia por trás</h2>
             <div className="mt-5 space-y-4 leading-relaxed text-ink-700">
               <p>
-                O BROTA é uma aplicação web progressiva construída com Next.js,
-                React e TypeScript, com banco PostgreSQL. Pode ser instalado no
-                celular como um aplicativo e funciona parcialmente sem conexão
-                para o que já foi acessado.
+                O BROTA é construído com Next.js, React e TypeScript, com banco
+                PostgreSQL.
               </p>
               <p>
                 A identificação de espécies por fotografia usa o{' '}

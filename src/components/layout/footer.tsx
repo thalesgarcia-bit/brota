@@ -33,9 +33,9 @@ export function SiteFooter() {
 
         <div className="mt-8 border-t border-ink-200 pt-6">
           <p className="text-xs leading-relaxed text-ink-500">
-            Projeto desenvolvido pelo Prof. Thales Garcia e pelos alunos do 9º ano
-            da Escola Criativa de Uberaba, em parceria com as Profas. Mikaella de
-            Sousa e Carol Manhezzo, na disciplina de Projeto de Vida.
+            Idealizado pela turma do 9º ano da Escola Criativa de Uberaba e
+            desenvolvido pelos estudantes com o Prof. Thales Garcia, na
+            disciplina de Projeto de Vida. Coordenação da Profª Carol Manhezzo.
           </p>
           <p className="mt-2 text-xs text-ink-400">
             Dados de estabelecimentos: © colaboradores do OpenStreetMap.

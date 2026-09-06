@@ -16,7 +16,7 @@ export type ButtonVariant =
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 const BASE =
-  'relative inline-flex items-center justify-center gap-2 rounded-md font-medium ' +
+  'inline-flex items-center justify-center gap-2 rounded-md font-medium ' +
   'transition-colors duration-150 select-none ' +
   'disabled:cursor-not-allowed disabled:opacity-55 ' +
   'focus-visible:outline-2 focus-visible:outline-offset-2';
