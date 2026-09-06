@@ -149,7 +149,25 @@ export async function signInAction(
         message: 'E-mail ou senha incorretos.',
       };
     }
-    throw error;
+
+    // Qualquer outra falha é problema nosso, não do usuário. Antes isto
+    // derrubava a página inteira e o log só mostrava código minificado.
+    // Registrar nome, mensagem e pilha é o que permite descobrir a causa.
+    const detail = error instanceof Error ? error : new Error(String(error));
+    console.error(
+      '[entrar] falha inesperada no login:',
+      detail.name,
+      '|',
+      detail.message,
+      '|',
+      detail.stack,
+    );
+
+    return {
+      status: 'error',
+      message:
+        'Não conseguimos concluir a entrada agora. Tente novamente em instantes.',
+    };
   }
 
   redirect(safeNext);

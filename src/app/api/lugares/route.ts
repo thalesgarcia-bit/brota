@@ -68,6 +68,10 @@ export async function GET(request: Request) {
     );
   } catch (error) {
     if (error instanceof PlacesError) {
+      // A mensagem interna diz o que o Overpass respondeu; ao usuário vai um
+      // texto curto, mas sem este registro a causa fica invisível no log.
+      console.error('[lugares]', error.code, '|', error.message);
+
       const status =
         error.code === 'not_configured'
           ? 503
