@@ -2,7 +2,7 @@
 
 Acompanhamento do desenvolvimento.
 
-**Última atualização:** 6 de setembro de 2026
+**Última atualização:** 6 de setembro de 2026 (segunda revisão)
 
 ---
 
@@ -20,6 +20,7 @@ Acompanhamento do desenvolvimento.
 | 7 | Onde comprar (mapa) | **Concluída** |
 | 8 | Colaboração, moderação e painel administrativo | **Concluída** |
 | 9 | PWA, acessibilidade, SEO, performance | **Concluída** |
+| 10 | Publicação: Supabase, Cloudflare Workers, senha pelo admin | **Concluída** |
 | — | Execução de build, lint e testes | **Bloqueada no ambiente remoto** (ver Riscos) |
 
 **Números:** 183 arquivos TypeScript · ~25.000 linhas · 43 rotas · 43 componentes ·
@@ -164,8 +165,8 @@ prontas para rodar com `npm test` assim que as dependências forem instaladas.
 | --- | --- | --- |
 | **Build, lint e testes** | Não executados | O registro do npm está bloqueado na sessão em nuvem onde o código foi escrito. A primeira execução local pode revelar ajustes de tipos — nada estrutural, dado que a sintaxe e o schema já foram verificados. |
 | **Contrato da API do Pl@ntNet** | Adapter implementado e validado com Zod | Rodar `npm run check:plantnet -- foto.jpg` com uma foto real. O host da API também está bloqueado no ambiente remoto, então o contrato foi implementado a partir da especificação e falha de forma explícita se estiver diferente — nunca devolve dado errado em silêncio. |
-| **Provedor de e-mail** | Interface pronta, adapter de log | Escolher SMTP ou serviço transacional e implementar o adapter em `src/domain/mail`. |
-| **Armazenamento de imagens** | Adapter local funcionando | Implementar adapter S3/R2 antes de publicar em plataforma efêmera. |
+| **Provedor de e-mail** | Interface pronta, adapter de log | Escolher SMTP ou serviço transacional e implementar o adapter em `src/domain/mail`. **Contornado**: a redefinição de senha pelo painel administrativo cobre o caso escolar. |
+| **Armazenamento de imagens** | **Resolvido** | Adapter do Supabase Storage implementado; compressão no navegador dispensa biblioteca nativa no servidor. |
 | **Fotografias das espécies** | Nenhuma cadastrada | O catálogo usa um marcador ilustrado gerado a partir do nome. Não usamos foto de banco de imagens nem imagem de outra espécie. |
 | **Limite da Overpass API** | Endpoint público | Em produção com volume, instância própria. |
 | **Editor de conteúdos educativos** | Leitura no admin | O corpo dos textos ainda é editado pelo seed ou pelo banco. |

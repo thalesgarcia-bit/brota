@@ -258,14 +258,48 @@ A matriz completa está em `src/lib/auth/rbac.ts`.
 
 ## Deploy
 
-1. Provisione um PostgreSQL gerenciado.
-2. Configure as variáveis de ambiente na plataforma (Vercel, Railway, Render…).
-3. `npm run db:deploy` para aplicar as migrations.
-4. `npm run build && npm start`.
+A configuração de referência é **Cloudflare Workers + Supabase**, ambas em plano
+gratuito. O passo a passo completo, com telas e comandos, está no guia de
+operação entregue junto ao projeto.
 
-Para armazenamento de imagens em produção, implemente um adapter de
-`StorageProvider` apontando para S3, R2 ou equivalente — o `LocalStorageProvider`
-grava no disco da aplicação, o que não funciona em plataformas efêmeras.
+### Resumo
+
+1. **Supabase** — crie o projeto, copie a *connection string* para `DATABASE_URL`
+   e crie um bucket público chamado `brota` em Storage.
+2. **GitHub** — `git push` do repositório.
+3. **Cloudflare** — Workers & Pages → Import a repository, com
+   `npm run cf:build` como build command.
+4. **Variáveis** — defina no painel do Worker (as chaves como *Secret*):
+   `DATABASE_URL`, `AUTH_SECRET`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
+   `SUPABASE_STORAGE_BUCKET`, `STORAGE_PROVIDER=supabase`,
+   `NEXT_PUBLIC_SITE_URL`, `PLANTNET_API_KEY`, `PLANT_ID_PROVIDER=plantnet`,
+   `AUTH_TRUST_HOST=true`.
+5. **Banco** — uma única vez, da sua máquina: `npm run db:deploy && npm run db:seed`.
+
+```bash
+npm run cf:build      # build com o adapter OpenNext
+npm run cf:preview    # roda o build localmente no runtime dos Workers
+npm run cf:deploy     # publica manualmente, se precisar
+```
+
+### Armazenamento de imagens
+
+Em produção use `STORAGE_PROVIDER="supabase"`. O `LocalStorageProvider` grava no
+disco da aplicação e serve apenas ao desenvolvimento — em qualquer plataforma
+moderna o disco é recriado a cada publicação e as fotos seriam perdidas.
+
+As imagens são **redimensionadas e convertidas para WebP no navegador** antes do
+envio (`src/lib/image/compress.ts`): uma foto de 6 MB chega ao servidor com cerca
+de 200 KB. Isso dispensa biblioteca nativa de imagem no servidor e faz muita
+diferença em rede escolar. O servidor continua validando cada arquivo pela
+assinatura binária.
+
+### Recuperação de senha
+
+Enquanto não houver provedor de e-mail configurado, a redefinição é feita pelo
+painel: **Administração → Usuários → Redefinir senha** gera uma senha temporária
+que aparece uma única vez para quem administra. A ação é registrada em log e
+notifica a pessoa.
 
 ---
 
