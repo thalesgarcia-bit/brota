@@ -23,6 +23,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: 'Senha', type: 'password' },
       },
       async authorize(raw) {
+        // DIAGNÓSTICO TEMPORÁRIO — remover quando o login estiver estável.
+        console.error('[entrar] 3. authorize chamado');
+
         const parsed = credentialsSchema.safeParse(raw);
         if (!parsed.success) return null;
 
@@ -33,10 +36,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           include: { profile: true, greenProfile: { select: { id: true } } },
         });
 
+        console.error('[entrar] 4. banco respondeu, usuário', user ? 'encontrado' : 'não encontrado');
+
         // Conta excluída (LGPD) não autentica.
         if (user?.deletedAt) return null;
 
         const ok = await verifyPassword(password, user?.passwordHash);
+        console.error('[entrar] 4b. senha conferida:', ok);
         if (!ok || !user) return null;
 
         return {

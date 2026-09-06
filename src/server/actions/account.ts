@@ -117,6 +117,9 @@ export async function signInAction(
   _previous: FormState,
   formData: FormData,
 ): Promise<FormState> {
+  // DIAGNÓSTICO TEMPORÁRIO — remover quando o login estiver estável.
+  console.error('[entrar] 1. ação iniciada');
+
   const parsed = credentialsSchema.safeParse({
     email: formData.get('email'),
     password: formData.get('password'),
@@ -135,12 +138,15 @@ export async function signInAction(
     ? nextPath
     : '/feed';
 
+  console.error('[entrar] 2. campos válidos, chamando signIn');
+
   try {
     await signIn('credentials', {
       email: parsed.data.email,
       password: parsed.data.password,
       redirect: false,
     });
+    console.error('[entrar] 5. signIn concluído, redirecionando');
   } catch (error) {
     if (error instanceof AuthError) {
       // Mensagem propositalmente genérica: não revelamos se o e-mail existe.
