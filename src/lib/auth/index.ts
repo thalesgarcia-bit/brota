@@ -58,11 +58,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.hasGreenProfile = Boolean(user.hasGreenProfile);
       }
 
+      // Normaliza o ID porque, durante o build, o Auth.js pode tipar
+      // campos customizados do token como desconhecidos.
+      const tokenId =
+        typeof token.id === 'string'
+          ? token.id
+          : typeof token.sub === 'string'
+            ? token.sub
+            : null;
+
       // Recarrega os dados quando a sessão é atualizada explicitamente
       // (troca de papel pelo admin, conclusão do onboarding, novo apelido).
-      if (trigger === 'update' && token.id) {
+      if (trigger === 'update' && tokenId) {
         const fresh = await prisma.user.findUnique({
-          where: { id: token.id },
+          where: { id: tokenId },
           select: {
             role: true,
             deletedAt: true,
@@ -70,6 +79,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             greenProfile: { select: { id: true } },
           },
         });
+
         if (fresh && !fresh.deletedAt) {
           token.role = fresh.role;
           token.username = fresh.profile?.username ?? null;
@@ -81,11 +91,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id;
-        session.user.role = token.role;
-        session.user.username = token.username;
-        session.user.hasGreenProfile = token.hasGreenProfile;
+        const tokenId =
+          typeof token.id === 'string'
+            ? token.id
+            : typeof token.sub === 'string'
+              ? token.sub
+              : null;
+
+        if (tokenId) {
+          session.user.id = tokenId;
+        }
+
+        session.user.role =
+          typeof token.role === 'string' ? (token.role as Role) : 'USER';
+        session.user.username =
+          typeof token.username === 'string' ? token.username : null;
+        session.user.hasGreenProfile = Boolean(token.hasGreenProfile);
       }
+
       return session;
     },
   },
