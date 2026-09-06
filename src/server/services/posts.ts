@@ -1,6 +1,6 @@
 import 'server-only';
 
-import type { Prisma, PostType } from '@prisma/client';
+import type { Prisma, PostType } from '@/generated/prisma/client';
 
 import { prisma } from '@/lib/db/prisma';
 
