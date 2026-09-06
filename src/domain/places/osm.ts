@@ -105,20 +105,28 @@ export class OpenStreetMapPlacesProvider implements PlacesProvider {
         },
         body: new URLSearchParams({ data: query }),
         signal: AbortSignal.timeout(30_000),
-        next: { revalidate: 60 * 30 },
       });
     } catch (error) {
       throw new PlacesError(
         'network',
-        `Falha ao consultar o Overpass: ${(error as Error).message}`,
+        `Falha ao consultar ${this.options.overpassUrl}: ${(error as Error).message}`,
       );
     }
 
     if (response.status === 429 || response.status === 504) {
-      throw new PlacesError('rate_limited', 'Overpass ocupado no momento.');
+      throw new PlacesError(
+        'rate_limited',
+        `Overpass ocupado (${response.status}) em ${this.options.overpassUrl}.`,
+      );
     }
     if (!response.ok) {
-      throw new PlacesError('unknown', `Overpass respondeu ${response.status}.`);
+      // O corpo da resposta costuma trazer o motivo em texto — sem ele, um
+      // 400 de consulta malformada e um 403 de bloqueio ficam iguais no log.
+      const detail = await response.text().catch(() => '');
+      throw new PlacesError(
+        'unknown',
+        `${this.options.overpassUrl} respondeu ${response.status}: ${detail.slice(0, 300)}`,
+      );
     }
 
     const parsed = overpassResponseSchema.safeParse(await response.json());
@@ -153,7 +161,6 @@ export class OpenStreetMapPlacesProvider implements PlacesProvider {
       response = await fetch(url, {
         headers: { 'User-Agent': this.options.userAgent },
         signal: AbortSignal.timeout(15_000),
-        next: { revalidate: 60 * 60 * 24 },
       });
     } catch (error) {
       throw new PlacesError(
@@ -166,7 +173,11 @@ export class OpenStreetMapPlacesProvider implements PlacesProvider {
       throw new PlacesError('rate_limited', 'Nominatim ocupado no momento.');
     }
     if (!response.ok) {
-      throw new PlacesError('unknown', `Nominatim respondeu ${response.status}.`);
+      const detail = await response.text().catch(() => '');
+      throw new PlacesError(
+        'unknown',
+        `Nominatim respondeu ${response.status}: ${detail.slice(0, 200)}`,
+      );
     }
 
     const parsed = z.array(nominatimItemSchema).safeParse(await response.json());
