@@ -10,6 +10,9 @@ import { PlantThumb } from '@/components/plants/plant-thumb';
 import { formatRelative } from '@/lib/utils/format';
 import { AddPlantButton } from '@/components/garden/add-plant-button';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Meu Jardim',
   robots: { index: false },

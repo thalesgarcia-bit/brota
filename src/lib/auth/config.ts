@@ -1,5 +1,5 @@
 import type { NextAuthConfig } from 'next-auth';
-import type { Role } from '@prisma/client';
+import type { Role } from '@/generated/prisma/client';
 
 /**
  * Configuração compartilhada, sem dependências de Node (Prisma, bcrypt).

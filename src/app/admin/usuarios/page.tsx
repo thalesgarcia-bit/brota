@@ -11,6 +11,9 @@ import { formatDate } from '@/lib/utils/format';
 import { RoleControl } from '@/components/admin/role-control';
 import { PasswordResetButton } from '@/components/admin/password-reset-button';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Usuários',
   robots: { index: false },

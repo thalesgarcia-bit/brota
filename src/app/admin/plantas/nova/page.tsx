@@ -6,6 +6,9 @@ import { prisma } from '@/lib/db/prisma';
 import { Icon } from '@/components/ui/icon';
 import { PlantForm } from '@/components/admin/plant-form';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Nova espécie',
   robots: { index: false },

@@ -15,6 +15,9 @@ import { PlantThumb } from '@/components/plants/plant-thumb';
 import { EXPERIENCE } from '@/lib/labels';
 import { formatMonthYear } from '@/lib/utils/format';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata({
   params,
 }: {

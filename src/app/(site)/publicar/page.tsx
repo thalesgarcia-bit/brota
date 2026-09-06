@@ -4,6 +4,9 @@ import { requireUser } from '@/lib/auth/session';
 import { prisma } from '@/lib/db/prisma';
 import { ComposeForm } from './compose-form';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Publicar',
   robots: { index: false },

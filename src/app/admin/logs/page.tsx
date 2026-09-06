@@ -6,6 +6,9 @@ import { EmptyState } from '@/components/ui/feedback';
 import { Badge } from '@/components/ui/badge';
 import { formatRelative } from '@/lib/utils/format';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Registros',
   robots: { index: false },

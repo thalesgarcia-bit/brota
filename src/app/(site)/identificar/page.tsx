@@ -12,6 +12,9 @@ import { IDENTIFICATION_STATUS } from '@/lib/labels';
 import { formatRelative } from '@/lib/utils/format';
 import { IdentifyPanel } from './identify-panel';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Que planta é essa?',
   description:

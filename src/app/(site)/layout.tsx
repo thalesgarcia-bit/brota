@@ -6,6 +6,9 @@ import { TopBar } from '@/components/layout/top-bar';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { SiteFooter } from '@/components/layout/footer';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 /**
  * Casca da aplicação.
  * A mesma estrutura serve páginas públicas e privadas: o que muda é o conteúdo

@@ -13,6 +13,9 @@ import { formatDate, formatRelative } from '@/lib/utils/format';
 import { DiaryComposer } from '@/components/garden/diary-composer';
 import { ReminderSettings } from '@/components/garden/reminder-settings';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Planta do meu jardim',
   robots: { index: false },

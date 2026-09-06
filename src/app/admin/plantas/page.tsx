@@ -10,6 +10,9 @@ import { LinkTabs } from '@/components/ui/tabs';
 import { DATA_QUALITY, DIFFICULTY, LIGHT } from '@/lib/labels';
 import { PlantQualityControl } from '@/components/admin/plant-quality-control';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Plantas',
   robots: { index: false },

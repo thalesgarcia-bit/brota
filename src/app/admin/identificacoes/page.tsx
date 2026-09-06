@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import type { IdentificationStatus } from '@prisma/client';
+import type { IdentificationStatus } from '@/generated/prisma/client';
 
 import { requirePermission } from '@/lib/auth/session';
 import { listPendingIdentifications } from '@/server/services/identification';
@@ -7,6 +7,9 @@ import { prisma } from '@/lib/db/prisma';
 import { EmptyState } from '@/components/ui/feedback';
 import { LinkTabs } from '@/components/ui/tabs';
 import { IdentificationQueue } from '@/components/admin/identification-queue';
+
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Identificações',

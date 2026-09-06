@@ -3,7 +3,7 @@ import 'server-only';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import type { IdentificationStatus } from '@prisma/client';
+import type { IdentificationStatus } from '@/generated/prisma/client';
 
 import { prisma } from '@/lib/db/prisma';
 import { serverEnv } from '@/lib/env';

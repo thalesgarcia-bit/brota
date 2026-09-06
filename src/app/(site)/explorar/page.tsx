@@ -10,6 +10,9 @@ import { FilterPanel } from './filter-panel';
 import { Pagination } from './pagination';
 import { parseFilters, type SearchParams } from './filters';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Explorar espécies',
   description:

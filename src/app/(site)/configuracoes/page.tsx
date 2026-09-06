@@ -11,6 +11,9 @@ import { ProfileForm } from './profile-form';
 import { PasswordForm } from './password-form';
 import { DeleteAccountSection } from './delete-account';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Configurações',
   robots: { index: false },

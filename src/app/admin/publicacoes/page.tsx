@@ -10,6 +10,9 @@ import { POST_TYPE } from '@/lib/labels';
 import { formatRelative } from '@/lib/utils/format';
 import { ModerationToggle } from '@/components/admin/moderation-toggle';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Publicações',
   robots: { index: false },

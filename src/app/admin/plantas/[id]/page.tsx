@@ -8,6 +8,9 @@ import { Icon } from '@/components/ui/icon';
 import { Alert } from '@/components/ui/feedback';
 import { PlantForm } from '@/components/admin/plant-form';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Editar espécie',
   robots: { index: false },

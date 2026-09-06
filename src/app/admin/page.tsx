@@ -9,6 +9,9 @@ import { Alert } from '@/components/ui/feedback';
 import { formatNumber, formatRelative } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/cn';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Visão geral',
   robots: { index: false },

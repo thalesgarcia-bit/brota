@@ -8,6 +8,9 @@ import { LinkTabs } from '@/components/ui/tabs';
 import { formatRelative } from '@/lib/utils/format';
 import { ModerationToggle } from '@/components/admin/moderation-toggle';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Comentários',
   robots: { index: false },

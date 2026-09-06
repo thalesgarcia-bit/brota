@@ -12,6 +12,9 @@ import { Avatar } from '@/components/ui/avatar';
 import { POST_TYPES } from '@/lib/validation/post';
 import { cn } from '@/lib/utils/cn';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Comunidade',
   description:

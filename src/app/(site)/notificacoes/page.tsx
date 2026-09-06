@@ -10,6 +10,9 @@ import { SubmitButton } from '@/components/ui/submit-button';
 import { formatRelative } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/cn';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Notificações',
   robots: { index: false },

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import type { ReportReason, ReportStatus, ReportTargetType } from '@prisma/client';
+import type { ReportReason, ReportStatus, ReportTargetType } from '@/generated/prisma/client';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

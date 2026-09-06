@@ -8,6 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Icon } from '@/components/ui/icon';
 import { AdminNav } from '@/components/admin/admin-nav';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 /**
  * Casca do painel administrativo.
  *

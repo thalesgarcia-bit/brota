@@ -5,6 +5,9 @@ import { requireUser } from '@/lib/auth/session';
 import { prisma } from '@/lib/db/prisma';
 import { OnboardingWizard } from './wizard';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Vamos descobrir quais plantas combinam com você',
   robots: { index: false },

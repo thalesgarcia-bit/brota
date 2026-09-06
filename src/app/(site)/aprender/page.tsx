@@ -13,7 +13,8 @@ export const metadata: Metadata = {
   alternates: { canonical: '/aprender' },
 };
 
-export const revalidate = 3600;
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
 
 export default async function LearnPage() {
   const articles = await prisma.educationalArticle.findMany({

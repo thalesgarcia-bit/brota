@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 
 import { suggestPlants } from '@/server/services/plants';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const runtime = 'nodejs';
 
 export async function GET(request: Request) {

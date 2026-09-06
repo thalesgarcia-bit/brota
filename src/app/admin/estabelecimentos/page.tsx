@@ -6,6 +6,9 @@ import { placesStatus } from '@/lib/env';
 import { Alert, EmptyState } from '@/components/ui/feedback';
 import { Badge } from '@/components/ui/badge';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Estabelecimentos',
   robots: { index: false },

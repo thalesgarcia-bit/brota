@@ -11,6 +11,9 @@ import { LinkTabs } from '@/components/ui/tabs';
 import { Icon } from '@/components/ui/icon';
 import { formatRelative } from '@/lib/utils/format';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Salvos',
   robots: { index: false },

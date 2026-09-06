@@ -16,6 +16,9 @@ import { CARE_TIME, EXPERIENCE, LIGHT, SPACE } from '@/lib/labels';
 import { regenerateMyRecommendationsAction } from '@/server/actions/onboarding';
 import { cn } from '@/lib/utils/cn';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Minhas recomendações',
   robots: { index: false },

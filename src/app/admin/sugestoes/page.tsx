@@ -7,6 +7,9 @@ import { EmptyState } from '@/components/ui/feedback';
 import { LinkTabs } from '@/components/ui/tabs';
 import { SuggestionReview } from '@/components/admin/suggestion-review';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Sugestões',
   robots: { index: false },

@@ -8,6 +8,9 @@ import { EmptyState } from '@/components/ui/feedback';
 import { Icon } from '@/components/ui/icon';
 import { formatDate } from '@/lib/utils/format';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Conteúdos educativos',
   robots: { index: false },

@@ -13,6 +13,9 @@ import { Icon } from '@/components/ui/icon';
 import { PlantThumb } from '@/components/plants/plant-thumb';
 import { compatibilityLabel } from '@/domain/recommendation/engine';
 
+// Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Início',
   robots: { index: false },
