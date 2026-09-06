@@ -3,11 +3,8 @@
 // Regra: informação botânica oficial nunca se mistura com opinião da comunidade.
 
 generator client {
-  provider        = "prisma-client-js"
-  // driverAdapters permite trocar o driver de conexão do Prisma. É o que torna
-  // possível rodar em plataformas sem soquete TCP tradicional, como os
-  // Cloudflare Workers.
-  previewFeatures = ["driverAdapters"]
+  provider   = "prisma-client-js"
+  engineType = "client"
 }
 
 datasource db {
