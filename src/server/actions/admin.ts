@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import type { Role } from '@/generated/prisma/client';
+import type { Role } from '@prisma/client';
 
 import { prisma } from '@/lib/db/prisma';
 import { assertPermission, AuthorizationError } from '@/lib/auth/session';

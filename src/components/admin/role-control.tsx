@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Role } from '@/generated/prisma/client';
+import type { Role } from '@prisma/client';
 
 import { Select } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';

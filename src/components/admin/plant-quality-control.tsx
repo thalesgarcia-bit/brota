@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import type { DataQuality } from '@/generated/prisma/client';
+import type { DataQuality } from '@prisma/client';
 
 import { Select } from '@/components/ui/input';
 import { useToast } from '@/components/ui/toast';

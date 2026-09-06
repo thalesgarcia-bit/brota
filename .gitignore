@@ -44,5 +44,6 @@ yarn-error.log*
 .idea
 
 # prisma
+/src/generated/
 /prisma/*.db
 /prisma/*.db-journal

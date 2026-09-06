@@ -1,4 +1,4 @@
-import type { Difficulty, LightRequirement, WaterFrequency } from '@/generated/prisma/client';
+import type { Difficulty, LightRequirement, WaterFrequency } from '@prisma/client';
 
 import { LevelMeter } from '@/components/ui/meter';
 import { DIFFICULTY, LIGHT, WATER } from '@/lib/labels';

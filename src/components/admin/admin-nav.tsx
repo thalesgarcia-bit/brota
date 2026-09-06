@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import type { Role } from '@/generated/prisma/client';
+import type { Role } from '@prisma/client';
 
 import { BrotaLogo } from '@/components/ui/logo';
 import { Icon } from '@/components/ui/icon';

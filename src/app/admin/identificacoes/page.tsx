@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import type { IdentificationStatus } from '@/generated/prisma/client';
+import type { IdentificationStatus } from '@prisma/client';
 
 import { requirePermission } from '@/lib/auth/session';
 import { listPendingIdentifications } from '@/server/services/identification';

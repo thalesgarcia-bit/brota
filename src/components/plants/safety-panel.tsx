@@ -1,4 +1,4 @@
-import type { ToxicityLevel } from '@/generated/prisma/client';
+import type { ToxicityLevel } from '@prisma/client';
 
 import { Icon } from '@/components/ui/icon';
 import { TOXICITY } from '@/lib/labels';

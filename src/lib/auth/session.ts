@@ -1,6 +1,6 @@
 import 'server-only';
 import { redirect } from 'next/navigation';
-import type { Role } from '@/generated/prisma/client';
+import type { Role } from '@prisma/client';
 
 import { auth } from '@/lib/auth';
 import { can, isStaff, type Permission } from '@/lib/auth/rbac';

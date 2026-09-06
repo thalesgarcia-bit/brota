@@ -11,7 +11,7 @@ import type {
   SpaceSize,
   ToxicityLevel,
   WaterFrequency,
-} from '@/generated/prisma/client';
+} from '@prisma/client';
 
 /** Recorte do Perfil Verde que o motor precisa. Nada além disso. */
 export type GreenProfileSnapshot = {

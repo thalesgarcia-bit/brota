@@ -3,19 +3,13 @@
 // Regra: informação botânica oficial nunca se mistura com opinião da comunidade.
 
 generator client {
-  // Mantém o cliente legado para os imports de tipos/enums já existentes
-  // no projeto (@prisma/client), sem exigir uma refatoração ampla.
-  provider   = "prisma-client-js"
-  engineType = "client"
-}
-
-generator cloudflareClient {
-  // Cliente realmente usado pela aplicação em produção no Cloudflare Workers.
-  // O runtime "cloudflare" evita loaders baseados em fs/readFileSync.
-  provider   = "prisma-client"
-  output     = "../src/generated/prisma"
-  runtime    = "cloudflare"
-  engineType = "client"
+  // Sem `output`: o cliente precisa ficar em node_modules/.prisma/client.
+  // O OpenNext aplica um patch nesse cliente durante o build para ele
+  // funcionar no workerd — e so consegue encontra-lo no lugar padrao.
+  // Um `output` proprio deixa o cliente sem o patch, e ele tenta carregar
+  // o compilador WebAssembly pelo sistema de arquivos, que nao existe no Worker.
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {

@@ -1,8 +1,7 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@auth/prisma-adapter';
-import type { PrismaClient as AuthPrismaClient } from '@prisma/client';
-import type { Role } from '@/generated/prisma/client';
+import type { PrismaClient as AuthPrismaClient, Role } from '@prisma/client';
 
 import { prisma } from '@/lib/db/prisma';
 import { authConfig } from '@/lib/auth/config';
@@ -11,10 +10,9 @@ import { credentialsSchema } from '@/lib/validation/auth';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
-  // @auth/prisma-adapter ainda tipa o parâmetro com o PrismaClient legado
-  // de @prisma/client. O cliente gerado para Cloudflare tem a mesma API
-  // necessária em runtime, mas um tipo interno diferente; por isso fazemos
-  // a compatibilização apenas nesta fronteira com o adapter.
+  // `prisma` é uma fachada que resolve o cliente da requisição atual; para o
+  // @auth/prisma-adapter, que espera a instância em si, a equivalência é
+  // afirmada aqui — apenas nesta fronteira com o pacote externo.
   adapter: PrismaAdapter(prisma as unknown as AuthPrismaClient),
   providers: [
     Credentials({

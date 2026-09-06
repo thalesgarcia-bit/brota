@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import type { SuggestionStatus } from '@/generated/prisma/client';
+import type { SuggestionStatus } from '@prisma/client';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

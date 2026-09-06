@@ -19,7 +19,7 @@ import type {
   SuggestionStatus,
   ToxicityLevel,
   WaterFrequency,
-} from '@/generated/prisma/client';
+} from '@prisma/client';
 
 import type { IconName } from '@/components/ui/icon';
 
