@@ -9,15 +9,11 @@ import { Icon } from '@/components/ui/icon';
 import { Markdown } from '@/components/ui/markdown';
 import { formatDate } from '@/lib/utils/format';
 
-export const revalidate = 3600;
-
-export async function generateStaticParams() {
-  const articles = await prisma.educationalArticle.findMany({
-    where: { status: 'PUBLISHED' },
-    select: { slug: true },
-  });
-  return articles.map((article) => ({ slug: article.slug }));
-}
+// Esta rota depende do banco de dados e deve ser resolvida no runtime do
+// Cloudflare Worker. Evita que o Next.js tente consultar o Prisma durante o
+// build, quando o módulo WASM do cliente Cloudflare ainda não está no ambiente
+// final de execução.
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
