@@ -262,8 +262,8 @@ export default async function AdminDashboard() {
                     <span className="truncate text-ink-800">{item.term}</span>
                   </span>
                   <span className="shrink-0 text-ink-500">
-                    {item._count.term}{' '}
-                    {item._count.term === 1 ? 'busca' : 'buscas'}
+                   {item._count?.term ?? 0}{' '}
+{(item._count?.term ?? 0) === 1 ? 'busca' : 'buscas'}
                   </span>
                 </li>
               ))}
@@ -282,7 +282,7 @@ export default async function AdminDashboard() {
             <ol className="mt-4 space-y-2">
               {topSaved
                 .map((item) => ({
-                  count: item._count.plantId,
+                 count: item._count?.plantId ?? 0,
                   plant: savedPlantNames.find((plant) => plant.id === item.plantId),
                 }))
                 .filter((item) => item.plant)
