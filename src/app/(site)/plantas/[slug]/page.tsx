@@ -25,16 +25,11 @@ import { SafetyPanel } from '@/components/plants/safety-panel';
 import { PlantActions } from '@/components/plants/plant-actions';
 import { SuggestionDialog } from '@/components/plants/suggestion-dialog';
 
-export const revalidate = 3600;
-
-export async function generateStaticParams() {
-  const plants = await prisma.plant.findMany({
-    where: { status: 'PUBLISHED' },
-    select: { slug: true },
-    take: 200,
-  });
-  return plants.map((plant) => ({ slug: plant.slug }));
-}
+// Esta rota depende do banco de dados e deve ser resolvida no runtime do
+// Cloudflare Worker. Evita que o Next.js tente consultar o Prisma durante o
+// build, quando o módulo WASM do cliente Cloudflare ainda não está no ambiente
+// final de execução.
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
