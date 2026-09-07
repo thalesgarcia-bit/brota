@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { prisma } from '@/lib/db/prisma';
 import { getSessionUser } from '@/lib/auth/session';
+import { can } from '@/lib/auth/rbac';
 import { getFeed, getPostComments } from '@/server/services/posts';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -109,11 +110,23 @@ export default async function ProfilePage({
             id: comment.id,
             body: comment.body,
             createdAt: comment.createdAt.toISOString(),
+            authorId: comment.author.id,
             author: {
               username: comment.author.profile?.username ?? null,
               displayName: comment.author.profile?.displayName ?? 'Membro',
               avatarUrl: comment.author.profile?.avatarUrl ?? null,
             },
+            replies: comment.replies.map((reply) => ({
+              id: reply.id,
+              body: reply.body,
+              createdAt: reply.createdAt.toISOString(),
+              authorId: reply.author.id,
+              author: {
+                username: reply.author.profile?.username ?? null,
+                displayName: reply.author.profile?.displayName ?? 'Membro',
+                avatarUrl: reply.author.profile?.avatarUrl ?? null,
+              },
+            })),
           })),
         );
       }),
@@ -291,6 +304,7 @@ export default async function ProfilePage({
                 key={post.id}
                 viewerId={viewer?.id ?? null}
                 isAuthenticated={Boolean(viewer)}
+                canModerate={can(viewer?.role, 'moderation:hide_content')}
                 comments={commentsByPost.get(post.id)}
                 post={{
                   id: post.id,
