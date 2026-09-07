@@ -21,6 +21,40 @@ function fieldErrors(error: {
   return result;
 }
 
+/**
+ * Cria uma notificação, a menos que já exista uma igual ainda não lida.
+ *
+ * Sem esta conferência, curtir, descurtir e curtir de novo deixava três avisos
+ * idênticos na caixa da mesma pessoa. O título carrega o nome de quem agiu, e
+ * é isso que separa um caso do outro: duas pessoas diferentes curtindo a mesma
+ * publicação continuam gerando dois avisos, como deve ser.
+ *
+ * A comparação só olha o que ainda não foi lido. Depois de a pessoa ler, um
+ * aviso novo sobre o mesmo assunto volta a fazer sentido.
+ */
+async function notificarSemRepetir(dados: {
+  userId: string;
+  type: 'LIKE' | 'COMMENT' | 'REPLY';
+  title: string;
+  body?: string;
+  linkUrl: string;
+}): Promise<void> {
+  const jaExiste = await prisma.notification.findFirst({
+    where: {
+      userId: dados.userId,
+      type: dados.type,
+      title: dados.title,
+      linkUrl: dados.linkUrl,
+      readAt: null,
+    },
+    select: { id: true },
+  });
+
+  if (jaExiste) return;
+
+  await prisma.notification.create({ data: dados });
+}
+
 export async function createPostAction(payload: unknown): Promise<{
   ok: boolean;
   message?: string;
@@ -98,13 +132,11 @@ export async function toggleLikeAction(
     await prisma.reaction.create({ data: { userId: user.id, postId } });
 
     if (post && post.authorId !== user.id) {
-      await prisma.notification.create({
-        data: {
-          userId: post.authorId,
-          type: 'LIKE',
-          title: `${user.name ?? 'Alguém'} gostou da sua publicação`,
-          linkUrl: `/feed?publicacao=${postId}`,
-        },
+      await notificarSemRepetir({
+        userId: post.authorId,
+        type: 'LIKE',
+        title: `${user.name ?? 'Alguém'} gostou da sua publicação`,
+        linkUrl: `/feed?publicacao=${postId}`,
       });
     }
 
@@ -192,16 +224,57 @@ export async function createCommentAction(
     };
   }
 
+  // Uma resposta só é aceita se o comentário respondido existir e pertencer
+  // a esta mesma publicação — senão daria para pendurar resposta em qualquer
+  // lugar mandando um identificador de fora.
+  let respondido: { authorId: string } | null = null;
+
+  if (parsed.data.parentId) {
+    respondido = await prisma.comment.findFirst({
+      where: {
+        id: parsed.data.parentId,
+        postId: post.id,
+        status: 'PUBLISHED',
+        parentId: null,
+      },
+      select: { authorId: true },
+    });
+
+    if (!respondido) {
+      return {
+        status: 'error',
+        message: 'O comentário que você quer responder não está mais disponível.',
+      };
+    }
+  }
+
   await prisma.comment.create({
     data: {
       postId: post.id,
       authorId: user.id,
-      parentId: parsed.data.parentId,
+      parentId: respondido ? parsed.data.parentId : null,
       body: parsed.data.body,
     },
   });
 
-  if (post.authorId !== user.id) {
+  const jaAvisados = new Set<string>([user.id]);
+
+  // Quem teve o comentário respondido é avisado primeiro: para essa pessoa a
+  // resposta é mais relevante do que o aviso genérico da publicação.
+  if (respondido && !jaAvisados.has(respondido.authorId)) {
+    jaAvisados.add(respondido.authorId);
+    await prisma.notification.create({
+      data: {
+        userId: respondido.authorId,
+        type: 'REPLY',
+        title: `${user.name ?? 'Alguém'} respondeu ao seu comentário`,
+        body: parsed.data.body.slice(0, 140),
+        linkUrl: `/feed?publicacao=${post.id}`,
+      },
+    });
+  }
+
+  if (!jaAvisados.has(post.authorId)) {
     await prisma.notification.create({
       data: {
         userId: post.authorId,
@@ -242,6 +315,71 @@ export async function setPostCommentsAction(
     return {
       ok: true,
       message: allow ? 'Comentários liberados.' : 'Comentários desativados.',
+    };
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      return { ok: false, message: error.message };
+    }
+    throw error;
+  }
+}
+
+/**
+ * Apaga um comentário.
+ *
+ * O autor apaga o que escreveu; o moderador esconde o que não deveria estar
+ * no ar. São coisas diferentes e ficam registradas como tais — por isso o
+ * estado gravado não é o mesmo, e só a ação da moderação gera registro.
+ *
+ * Nada é removido do banco: o comentário sai da vista, mas o histórico
+ * permanece, que é o que permite auditar uma decisão depois.
+ */
+export async function deleteCommentAction(
+  commentId: string,
+): Promise<{ ok: boolean; message?: string }> {
+  try {
+    const user = await assertPermission('post:comment');
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+      select: { id: true, authorId: true, postId: true, status: true },
+    });
+
+    if (!comment || comment.status !== 'PUBLISHED') {
+      return { ok: false, message: 'Comentário não encontrado.' };
+    }
+
+    const isOwner = comment.authorId === user.id;
+    const isModerator = can(user.role, 'moderation:hide_content');
+
+    if (!isOwner && !isModerator) {
+      throw new AuthorizationError();
+    }
+
+    await prisma.comment.update({
+      where: { id: commentId },
+      data: {
+        status: isOwner ? 'REMOVED_BY_AUTHOR' : 'HIDDEN_BY_MODERATION',
+      },
+    });
+
+    if (!isOwner) {
+      await prisma.moderationAction.create({
+        data: {
+          moderatorId: user.id,
+          targetType: 'Comment',
+          targetId: commentId,
+          action: 'hide',
+        },
+      });
+    }
+
+    revalidatePath('/feed');
+    revalidatePath('/comunidade');
+
+    return {
+      ok: true,
+      message: isOwner ? 'Comentário apagado.' : 'Comentário ocultado.',
     };
   } catch (error) {
     if (error instanceof AuthorizationError) {

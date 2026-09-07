@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { requireUser } from '@/lib/auth/session';
+import { can } from '@/lib/auth/rbac';
 import { prisma } from '@/lib/db/prisma';
 import { getFeed, getPostComments, getTrendingTags } from '@/server/services/posts';
 import { getDailyPlant } from '@/server/services/plants';
@@ -62,11 +63,23 @@ export default async function FeedPage() {
             id: comment.id,
             body: comment.body,
             createdAt: comment.createdAt.toISOString(),
+            authorId: comment.author.id,
             author: {
               username: comment.author.profile?.username ?? null,
               displayName: comment.author.profile?.displayName ?? 'Membro',
               avatarUrl: comment.author.profile?.avatarUrl ?? null,
             },
+            replies: comment.replies.map((reply) => ({
+              id: reply.id,
+              body: reply.body,
+              createdAt: reply.createdAt.toISOString(),
+              authorId: reply.author.id,
+              author: {
+                username: reply.author.profile?.username ?? null,
+                displayName: reply.author.profile?.displayName ?? 'Membro',
+                avatarUrl: reply.author.profile?.avatarUrl ?? null,
+              },
+            })),
           })),
         );
       }),
@@ -130,6 +143,7 @@ export default async function FeedPage() {
                   key={post.id}
                   viewerId={user.id}
                   isAuthenticated
+                  canModerate={can(user.role, 'moderation:hide_content')}
                   comments={commentsByPost.get(post.id)}
                   post={{
                     id: post.id,

@@ -4,9 +4,11 @@ import Link from 'next/link';
 import { requirePermission } from '@/lib/auth/session';
 import { prisma } from '@/lib/db/prisma';
 import { Badge } from '@/components/ui/badge';
+import { ButtonLink } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/feedback';
 import { Icon } from '@/components/ui/icon';
 import { formatDate } from '@/lib/utils/format';
+import { ArchiveArticleButton } from '@/components/admin/archive-article-button';
 
 // Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
 export const dynamic = 'force-dynamic';
@@ -35,13 +37,18 @@ export default async function AdminArticlesPage() {
 
   return (
     <div className="px-4 py-6 sm:px-6 sm:py-8">
-      <header>
-        <h1 className="text-2xl sm:text-3xl">Conteúdos educativos</h1>
-        <p className="mt-1.5 max-w-2xl text-ink-600">
-          Os textos da área Aprender. A edição do corpo é feita no arquivo de
-          seed ou diretamente no banco — o editor visual entra em uma próxima
-          etapa.
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl">Conteúdos educativos</h1>
+          <p className="mt-1.5 max-w-2xl text-ink-600">
+            Os textos da área Aprender. Rascunhos ficam visíveis só aqui;
+            publicados vão para o site.
+          </p>
+        </div>
+
+        <ButtonLink href="/admin/conteudos/novo" iconLeft="plus">
+          Novo conteúdo
+        </ButtonLink>
       </header>
 
       <div className="mt-6">
@@ -49,7 +56,12 @@ export default async function AdminArticlesPage() {
           <EmptyState
             icon="book"
             title="Nenhum conteúdo cadastrado"
-            description="Rode o seed do banco para carregar os textos iniciais."
+            description="Escreva o primeiro texto da área Aprender."
+            action={
+              <ButtonLink href="/admin/conteudos/novo" iconLeft="plus">
+                Novo conteúdo
+              </ButtonLink>
+            }
           />
         ) : (
           <ul className="space-y-2.5">
@@ -68,9 +80,19 @@ export default async function AdminArticlesPage() {
                     </Link>
                     <Badge tone="neutral">{article.category}</Badge>
                     <Badge
-                      tone={article.status === 'PUBLISHED' ? 'success' : 'warning'}
+                      tone={
+                        article.status === 'PUBLISHED'
+                          ? 'success'
+                          : article.status === 'ARCHIVED'
+                            ? 'neutral'
+                            : 'warning'
+                      }
                     >
-                      {article.status === 'PUBLISHED' ? 'Publicado' : 'Rascunho'}
+                      {article.status === 'PUBLISHED'
+                        ? 'Publicado'
+                        : article.status === 'ARCHIVED'
+                          ? 'Arquivado'
+                          : 'Rascunho'}
                     </Badge>
                   </p>
                   <p className="mt-1 text-xs text-ink-500">
@@ -82,13 +104,31 @@ export default async function AdminArticlesPage() {
                   </p>
                 </div>
 
-                <Link
-                  href={`/aprender/${article.slug}`}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-700 hover:underline"
-                >
-                  Ver
-                  <Icon name="externalLink" size={14} />
-                </Link>
+                <div className="flex items-center gap-3">
+                  {article.status === 'PUBLISHED' ? (
+                    <Link
+                      href={`/aprender/${article.slug}`}
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-600 hover:text-brand-700"
+                    >
+                      Ver
+                      <Icon name="externalLink" size={14} />
+                    </Link>
+                  ) : null}
+
+                  <ArchiveArticleButton
+                    articleId={article.id}
+                    archived={article.status === 'ARCHIVED'}
+                  />
+
+                  <ButtonLink
+                    href={`/admin/conteudos/${article.id}`}
+                    size="sm"
+                    variant="outline"
+                    iconLeft="edit"
+                  >
+                    Editar
+                  </ButtonLink>
+                </div>
               </li>
             ))}
           </ul>

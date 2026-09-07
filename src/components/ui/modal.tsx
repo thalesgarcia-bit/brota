@@ -32,7 +32,8 @@ export function Modal({
   onClose: () => void;
   title: string;
   description?: string;
-  children: ReactNode;
+  /** Opcional: uma confirmação pode viver só de título e descrição. */
+  children?: ReactNode;
   footer?: ReactNode;
   size?: 'sm' | 'md' | 'lg';
 }) {

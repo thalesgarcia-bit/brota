@@ -21,6 +21,8 @@ import { INITIAL_FORM_STATE } from '@/server/actions/form-state';
 import {
   createCommentAction,
   createReportAction,
+  deleteCommentAction,
+  deletePostAction,
   setPostCommentsAction,
   toggleLikeAction,
   toggleSavePostAction,
@@ -54,7 +56,10 @@ export type CommentData = {
   id: string;
   body: string;
   createdAt: string;
+  authorId: string;
   author: { username: string | null; displayName: string; avatarUrl: string | null };
+  /** Respostas a este comentário. Só o primeiro nível tem respostas. */
+  replies?: CommentData[];
 };
 
 export function PostCard({
@@ -62,11 +67,14 @@ export function PostCard({
   comments,
   viewerId,
   isAuthenticated,
+  canModerate = false,
 }: {
   post: PostCardData;
   comments?: CommentData[];
   viewerId: string | null;
   isAuthenticated: boolean;
+  /** Quem modera pode ocultar comentário alheio. O servidor confere de novo. */
+  canModerate?: boolean;
 }) {
   const router = useRouter();
   const { notify } = useToast();
@@ -80,6 +88,14 @@ export function PostCard({
   const [reportReason, setReportReason] = useState<string>('SPAM');
   const [imageIndex, setImageIndex] = useState(0);
   const [pending, startTransition] = useTransition();
+
+  /** A quem esta resposta se dirige. Nulo = comentário solto na publicação. */
+  const [replyTo, setReplyTo] = useState<{ id: string; name: string } | null>(null);
+
+  /** Exclusões passam por confirmação: são irreversíveis para quem apagou. */
+  const [confirmacao, setConfirmacao] = useState<
+    { tipo: 'publicacao' } | { tipo: 'comentario'; id: string } | null
+  >(null);
 
   const [commentState, commentAction] = useActionState(
     createCommentAction,
@@ -97,6 +113,109 @@ export function PostCard({
       notify(commentState.message ?? 'Não foi possível comentar.', 'error');
     }
   }, [commentState, notify, router]);
+
+  // Publicado o comentário, a resposta em curso deixa de fazer sentido.
+  useEffect(() => {
+    if (commentState.status === 'success') setReplyTo(null);
+  }, [commentState]);
+
+  function apagarComentario(commentId: string) {
+    startTransition(async () => {
+      const result = await deleteCommentAction(commentId);
+      notify(
+        result.message ?? (result.ok ? 'Comentário apagado.' : 'Não foi possível apagar.'),
+        result.ok ? 'success' : 'error',
+      );
+      if (result.ok) router.refresh();
+    });
+  }
+
+  function excluirPublicacao() {
+    startTransition(async () => {
+      await deletePostAction(post.id);
+    });
+  }
+
+  function confirmar() {
+    const alvo = confirmacao;
+    setConfirmacao(null);
+    if (!alvo) return;
+    if (alvo.tipo === 'publicacao') excluirPublicacao();
+    else apagarComentario(alvo.id);
+  }
+
+  /**
+   * Desenha um comentário. Respostas usam a mesma forma, recuadas e sem o
+   * botão de responder: um nível de aninhamento basta para acompanhar a
+   * conversa, e dois já viram um labirinto na tela do celular.
+   */
+  function renderComentario(comment: CommentData, isReply: boolean) {
+    const souAutor = viewerId === comment.authorId;
+    const podeRemover = souAutor || canModerate;
+
+    return (
+      <div className="flex gap-2.5">
+        <Avatar
+          name={comment.author.displayName}
+          src={comment.author.avatarUrl}
+          size="sm"
+        />
+        <div className="min-w-0 flex-1">
+          <div className="rounded-lg bg-ink-50 px-3 py-2">
+            <p className="text-sm">
+              <Link
+                href={
+                  comment.author.username
+                    ? `/perfil/${comment.author.username}`
+                    : '#'
+                }
+                className="font-medium text-ink-900 hover:text-brand-700"
+              >
+                {comment.author.displayName}
+              </Link>
+              <span className="ml-2 text-xs text-ink-500">
+                {formatRelative(comment.createdAt)}
+              </span>
+            </p>
+            <p className="mt-0.5 text-sm leading-relaxed text-ink-700">
+              {comment.body}
+            </p>
+          </div>
+
+          {(!isReply && isAuthenticated) || podeRemover ? (
+            <p className="mt-1 flex gap-4 pl-1 text-xs">
+              {!isReply && isAuthenticated ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setReplyTo({
+                      id: comment.id,
+                      name: comment.author.displayName,
+                    })
+                  }
+                  className="font-medium text-ink-500 hover:text-brand-700"
+                >
+                  Responder
+                </button>
+              ) : null}
+
+              {podeRemover ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setConfirmacao({ tipo: 'comentario', id: comment.id })
+                  }
+                  className="font-medium text-ink-500 hover:text-danger-700"
+                >
+                  {souAutor ? 'Apagar' : 'Ocultar'}
+                </button>
+              ) : null}
+            </p>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
 
   function guard(): boolean {
     if (isAuthenticated) return false;
@@ -221,6 +340,13 @@ export function PostCard({
                 onClick={toggleCommentSetting}
               >
                 {allowComments ? 'Desativar comentários' : 'Ativar comentários'}
+              </MenuItem>
+              <MenuItem
+                icon="trash"
+                tone="danger"
+                onClick={() => setConfirmacao({ tipo: 'publicacao' })}
+              >
+                Excluir publicação
               </MenuItem>
               <MenuSeparator />
             </>
@@ -388,34 +514,18 @@ export function PostCard({
         {showComments && allowComments ? (
           <div className="mt-3 border-t border-ink-100 pt-3.5">
             {comments && comments.length > 0 ? (
-              <ul className="space-y-3">
+              <ul className="space-y-4">
                 {comments.map((comment) => (
-                  <li key={comment.id} className="flex gap-2.5">
-                    <Avatar
-                      name={comment.author.displayName}
-                      src={comment.author.avatarUrl}
-                      size="sm"
-                    />
-                    <div className="min-w-0 flex-1 rounded-lg bg-ink-50 px-3 py-2">
-                      <p className="text-sm">
-                        <Link
-                          href={
-                            comment.author.username
-                              ? `/perfil/${comment.author.username}`
-                              : '#'
-                          }
-                          className="font-medium text-ink-900 hover:text-brand-700"
-                        >
-                          {comment.author.displayName}
-                        </Link>
-                        <span className="ml-2 text-xs text-ink-500">
-                          {formatRelative(comment.createdAt)}
-                        </span>
-                      </p>
-                      <p className="mt-0.5 text-sm leading-relaxed text-ink-700">
-                        {comment.body}
-                      </p>
-                    </div>
+                  <li key={comment.id}>
+                    {renderComentario(comment, false)}
+
+                    {comment.replies && comment.replies.length > 0 ? (
+                      <ul className="mt-2.5 space-y-2.5 border-l-2 border-ink-100 pl-3 sm:pl-4">
+                        {comment.replies.map((reply) => (
+                          <li key={reply.id}>{renderComentario(reply, true)}</li>
+                        ))}
+                      </ul>
+                    ) : null}
                   </li>
                 ))}
               </ul>
@@ -426,23 +536,47 @@ export function PostCard({
             )}
 
             {isAuthenticated ? (
-              <form action={commentAction} className="mt-3.5 flex gap-2.5">
+              <form action={commentAction} className="mt-3.5">
                 <input type="hidden" name="postId" value={post.id} />
-                <label htmlFor={`comentario-${post.id}`} className="sr-only">
-                  Escrever comentário
-                </label>
-                <Textarea
-                  id={`comentario-${post.id}`}
-                  name="body"
-                  rows={1}
-                  maxLength={1000}
-                  required
-                  placeholder="Escreva um comentário"
-                  className="min-h-11"
-                />
-                <SubmitButton size="sm" iconLeft="arrowRight">
-                  <span className="sr-only">Enviar</span>
-                </SubmitButton>
+                {replyTo ? (
+                  <input type="hidden" name="parentId" value={replyTo.id} />
+                ) : null}
+
+                {replyTo ? (
+                  <p className="mb-2 flex items-center gap-2 rounded-md bg-brand-50 px-3 py-2 text-xs text-brand-800">
+                    <Icon name="message" size={14} />
+                    Respondendo a <strong>{replyTo.name}</strong>
+                    <button
+                      type="button"
+                      onClick={() => setReplyTo(null)}
+                      className="ml-auto font-medium underline underline-offset-2"
+                    >
+                      Cancelar
+                    </button>
+                  </p>
+                ) : null}
+
+                <div className="flex gap-2.5">
+                  <label htmlFor={`comentario-${post.id}`} className="sr-only">
+                    {replyTo ? 'Escrever resposta' : 'Escrever comentário'}
+                  </label>
+                  <Textarea
+                    id={`comentario-${post.id}`}
+                    name="body"
+                    rows={1}
+                    maxLength={1000}
+                    required
+                    placeholder={
+                      replyTo
+                        ? `Responder a ${replyTo.name}`
+                        : 'Escreva um comentário'
+                    }
+                    className="min-h-11"
+                  />
+                  <SubmitButton size="sm" iconLeft="arrowRight">
+                    <span className="sr-only">Enviar</span>
+                  </SubmitButton>
+                </div>
               </form>
             ) : (
               <p className="mt-3 text-sm text-ink-500">
@@ -498,6 +632,33 @@ export function PostCard({
           </div>
         </fieldset>
       </Modal>
+
+      {/* Confirmação de exclusão */}
+      <Modal
+        open={confirmacao !== null}
+        onClose={() => setConfirmacao(null)}
+        title={
+          confirmacao?.tipo === 'publicacao'
+            ? 'Excluir esta publicação?'
+            : 'Apagar este comentário?'
+        }
+        description={
+          confirmacao?.tipo === 'publicacao'
+            ? 'A publicação sai do feed, junto com os comentários que ela recebeu. Não dá para desfazer.'
+            : 'O comentário sai da conversa. Não dá para desfazer.'
+        }
+        size="sm"
+        footer={
+          <div className="flex gap-2.5">
+            <Button variant="outline" fullWidth onClick={() => setConfirmacao(null)}>
+              Cancelar
+            </Button>
+            <Button variant="danger" fullWidth loading={pending} onClick={confirmar}>
+              {confirmacao?.tipo === 'publicacao' ? 'Excluir' : 'Apagar'}
+            </Button>
+          </div>
+        }
+      />
     </article>
   );
 }
