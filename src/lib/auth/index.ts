@@ -100,12 +100,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           },
         });
 
-        if (fresh && !fresh.deletedAt) {
-          token.role = fresh.role;
-          token.username = fresh.profile?.username ?? null;
-          token.hasGreenProfile = Boolean(fresh.greenProfile);
-        }
+        // Conta apagada (LGPD) ou sumida do banco: a sessão acaba aqui.
+        // Devolver null derruba o token — sem isso, quem excluísse a própria
+        // conta continuaria navegando com o cookie que já tinha na mão.
+        if (!fresh || fresh.deletedAt) return null;
 
+        token.role = fresh.role;
+        token.username = fresh.profile?.username ?? null;
+        token.hasGreenProfile = Boolean(fresh.greenProfile);
         token.conferidoEm = AGORA;
       }
 

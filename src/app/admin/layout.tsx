@@ -49,7 +49,7 @@ export default async function AdminLayout({
           <div className="flex h-14 items-center justify-between gap-3 px-4 lg:px-6">
             <Link href="/admin" className="flex items-center gap-2.5 lg:hidden">
               <BrotaLogo size="sm" />
-              <Badge tone="neutral">Admin</Badge>
+              <Badge tone="neutral">Painel</Badge>
             </Link>
 
             <p className="hidden text-sm text-ink-500 lg:block">

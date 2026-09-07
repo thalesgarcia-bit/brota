@@ -69,7 +69,7 @@ export function AdminNav({
         <div className="sticky top-0 flex h-dvh flex-col">
           <div className="flex items-center gap-2.5 px-5 py-5">
             <BrotaLogo size="sm" />
-            <Badge tone="neutral">Admin</Badge>
+            <Badge tone="neutral">Painel</Badge>
           </div>
           <nav aria-label="Navegação administrativa" className="flex-1 overflow-y-auto px-3 pb-4">
             {list}

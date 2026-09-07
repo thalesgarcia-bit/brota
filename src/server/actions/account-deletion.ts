@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { redirect } from 'next/navigation';
 
 import { prisma } from '@/lib/db/prisma';
-import { signOut } from '@/lib/auth';
+import { encerrarSessao } from '@/lib/auth/sign-out';
 import { requireUser } from '@/lib/auth/session';
 import { hashPassword, verifyPassword } from '@/lib/auth/password';
 import {
@@ -160,6 +160,6 @@ export async function deleteAccountAction(
     }),
   ]);
 
-  await signOut({ redirect: false });
+  await encerrarSessao();
   redirect('/?conta=excluida');
 }
