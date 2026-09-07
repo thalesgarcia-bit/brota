@@ -141,7 +141,6 @@ export default function PrivacyPage() {
         <section>
           <h2 className="text-xl">7. Segurança</h2>
           <ul className="mt-2 list-disc space-y-1 pl-5">
-            <li>Senhas com hash bcrypt — nem a equipe consegue lê-las</li>
             <li>Comunicação criptografada (HTTPS)</li>
             <li>Controle de acesso verificado no servidor, não só na interface</li>
             <li>Uploads validados pelo conteúdo do arquivo</li>

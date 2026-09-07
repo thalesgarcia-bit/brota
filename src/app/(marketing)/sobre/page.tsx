@@ -177,10 +177,6 @@ export default function AboutPage() {
             <h2 className="text-2xl sm:text-3xl">A tecnologia por trás</h2>
             <div className="mt-5 space-y-4 leading-relaxed text-ink-700">
               <p>
-                O BROTA é construído com Next.js, React e TypeScript, com banco
-                PostgreSQL.
-              </p>
-              <p>
                 A identificação de espécies por fotografia usa o{' '}
                 <a
                   href="https://plantnet.org"

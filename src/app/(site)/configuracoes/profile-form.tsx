@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect } from 'react';
 
+import { AvatarField } from '@/components/account/avatar-field';
 import { Field } from '@/components/ui/field';
 import { Input, Select, Textarea } from '@/components/ui/input';
 import { Switch } from '@/components/ui/choice';
@@ -36,7 +37,7 @@ export function ProfileForm({ initial }: { initial: Initial }) {
 
   return (
     <form action={action} className="space-y-4" noValidate>
-      <input type="hidden" name="avatarUrl" value={initial.avatarUrl ?? ''} />
+      <AvatarField nome={initial.displayName} inicial={initial.avatarUrl} />
 
       {state.status === 'error' && !state.fieldErrors ? (
         <Alert tone="danger">{state.message}</Alert>

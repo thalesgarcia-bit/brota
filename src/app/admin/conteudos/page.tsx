@@ -8,7 +8,7 @@ import { ButtonLink } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/feedback';
 import { Icon } from '@/components/ui/icon';
 import { formatDate } from '@/lib/utils/format';
-import { ArchiveArticleButton } from '@/components/admin/archive-article-button';
+import { ArticleActions } from '@/components/admin/article-actions';
 
 // Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
 export const dynamic = 'force-dynamic';
@@ -115,8 +115,9 @@ export default async function AdminArticlesPage() {
                     </Link>
                   ) : null}
 
-                  <ArchiveArticleButton
+                  <ArticleActions
                     articleId={article.id}
+                    title={article.title}
                     archived={article.status === 'ARCHIVED'}
                   />
 

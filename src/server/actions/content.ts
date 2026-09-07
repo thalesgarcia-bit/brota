@@ -199,3 +199,56 @@ export async function archiveArticleAction(
     throw error;
   }
 }
+
+/**
+ * Apaga um conteúdo de vez.
+ *
+ * Só depois de arquivado. Arquivar é reversível e é o passo que a pressa não
+ * costuma atropelar; apagar não tem volta. Exigir os dois passos é o que separa
+ * "quis tirar do ar" de "quis destruir" — e num sistema alimentado por uma
+ * turma inteira, essa distinção protege o trabalho de quem escreveu.
+ */
+export async function deleteArticleAction(
+  articleId: string,
+): Promise<{ ok: boolean; message?: string }> {
+  try {
+    const staff = await assertPermission('admin:manage_content');
+
+    const artigo = await prisma.educationalArticle.findUnique({
+      where: { id: articleId },
+      select: { id: true, title: true, slug: true, status: true },
+    });
+
+    if (!artigo) return { ok: false, message: 'Conteúdo não encontrado.' };
+
+    if (artigo.status !== 'ARCHIVED') {
+      return {
+        ok: false,
+        message: 'Arquive o conteúdo antes de apagar. Assim ninguém apaga sem querer.',
+      };
+    }
+
+    // O registro fica antes da exclusão: depois, não haveria de onde copiar.
+    await prisma.auditLog.create({
+      data: {
+        actorId: staff.id,
+        action: 'content.delete',
+        entityType: 'EducationalArticle',
+        entityId: articleId,
+        before: { title: artigo.title, slug: artigo.slug },
+      },
+    });
+
+    await prisma.educationalArticle.delete({ where: { id: articleId } });
+
+    revalidatePath('/aprender');
+    revalidatePath('/admin/conteudos');
+
+    return { ok: true, message: `"${artigo.title}" foi apagado.` };
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      return { ok: false, message: error.message };
+    }
+    throw error;
+  }
+}

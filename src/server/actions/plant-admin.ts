@@ -244,30 +244,135 @@ export async function savePlantAction(
   redirect(`/admin/plantas/${plant.id}?salvo=1`);
 }
 
-export async function deletePlantAction(plantId: string): Promise<void> {
-  const staff = await assertPermission('admin:manage_plants');
+/**
+ * Arquiva ou devolve uma espécie ao rascunho.
+ *
+ * Arquivar tira a ficha do ar sem tocar em nada que dependa dela: um jardim que
+ * a tenha, uma publicação que a marque, uma identificação que a aponte. É o
+ * passo com volta.
+ */
+export async function arquivarPlantaAction(
+  plantId: string,
+): Promise<{ ok: boolean; message?: string }> {
+  try {
+    const staff = await assertPermission('admin:manage_plants');
 
-  const plant = await prisma.plant.findUnique({
-    where: { id: plantId },
-    select: { slug: true },
-  });
-  if (!plant) return;
+    const plant = await prisma.plant.findUnique({
+      where: { id: plantId },
+      select: { slug: true, status: true },
+    });
+    if (!plant) return { ok: false, message: 'Espécie não encontrada.' };
 
-  // Arquivar, nunca apagar: fichas podem estar ligadas a jardins e publicações.
-  await prisma.plant.update({
-    where: { id: plantId },
-    data: { status: 'ARCHIVED' },
-  });
+    const arquivar = plant.status !== 'ARCHIVED';
 
-  await prisma.auditLog.create({
-    data: {
-      actorId: staff.id,
-      action: 'plant.archive',
-      entityType: 'Plant',
-      entityId: plantId,
-    },
-  });
+    await prisma.plant.update({
+      where: { id: plantId },
+      data: { status: arquivar ? 'ARCHIVED' : 'DRAFT' },
+    });
 
-  revalidatePath('/admin/plantas');
-  redirect('/admin/plantas');
+    await prisma.auditLog.create({
+      data: {
+        actorId: staff.id,
+        action: arquivar ? 'plant.archive' : 'plant.restore',
+        entityType: 'Plant',
+        entityId: plantId,
+        before: { status: plant.status },
+        after: { status: arquivar ? 'ARCHIVED' : 'DRAFT' },
+      },
+    });
+
+    revalidatePath('/admin/plantas');
+    revalidatePath('/explorar');
+    revalidatePath(`/plantas/${plant.slug}`);
+
+    return {
+      ok: true,
+      message: arquivar
+        ? 'Espécie arquivada. Ela saiu do catálogo, mas continua aqui.'
+        : 'Espécie devolvida para rascunho.',
+    };
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      return { ok: false, message: error.message };
+    }
+    throw error;
+  }
+}
+
+/**
+ * Apaga uma espécie de vez.
+ *
+ * Duas travas, e as duas existem por um motivo concreto.
+ *
+ * A primeira: só depois de arquivada. Arquivar tem volta e é o passo que a
+ * pressa não atropela; apagar não tem.
+ *
+ * A segunda: se alguém tem essa planta no jardim, salvou a ficha, publicou uma
+ * foto marcando-a ou pediu uma identificação que chegou nela, o banco apagaria
+ * tudo isso junto em cascata — sem avisar. Então aqui a conta é feita antes, e
+ * a exclusão é recusada com o motivo na tela. Uma ficha errada se corrige; o
+ * jardim de alguém, não.
+ */
+export async function apagarPlantaAction(
+  plantId: string,
+): Promise<{ ok: boolean; message?: string }> {
+  try {
+    const staff = await assertPermission('admin:manage_plants');
+
+    const plant = await prisma.plant.findUnique({
+      where: { id: plantId },
+      select: { slug: true, scientificName: true, status: true },
+    });
+    if (!plant) return { ok: false, message: 'Espécie não encontrada.' };
+
+    if (plant.status !== 'ARCHIVED') {
+      return {
+        ok: false,
+        message: 'Arquive a espécie antes de apagar. Assim ninguém apaga sem querer.',
+      };
+    }
+
+    const [emJardins, salvamentos, publicacoes, colecoes] = await prisma.$transaction([
+      prisma.userPlant.count({ where: { plantId } }),
+      prisma.savedItem.count({ where: { plantId } }),
+      prisma.post.count({ where: { plantId } }),
+      prisma.collectionItem.count({ where: { plantId } }),
+    ]);
+
+    const impedimentos = [
+      emJardins > 0 ? `${emJardins} jardim(ns)` : null,
+      salvamentos > 0 ? `${salvamentos} salvamento(s)` : null,
+      publicacoes > 0 ? `${publicacoes} publicação(ões)` : null,
+      colecoes > 0 ? `${colecoes} coleção(ões)` : null,
+    ].filter(Boolean);
+
+    if (impedimentos.length > 0) {
+      return {
+        ok: false,
+        message: `Esta espécie está em ${impedimentos.join(', ')}. Apagar levaria isso junto. Ela segue arquivada, fora do catálogo.`,
+      };
+    }
+
+    await prisma.auditLog.create({
+      data: {
+        actorId: staff.id,
+        action: 'plant.delete',
+        entityType: 'Plant',
+        entityId: plantId,
+        before: { scientificName: plant.scientificName, slug: plant.slug },
+      },
+    });
+
+    await prisma.plant.delete({ where: { id: plantId } });
+
+    revalidatePath('/admin/plantas');
+    revalidatePath('/explorar');
+
+    return { ok: true, message: `${plant.scientificName} foi apagada.` };
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      return { ok: false, message: error.message };
+    }
+    throw error;
+  }
 }

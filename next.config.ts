@@ -8,6 +8,13 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'bs.plantnet.org' },
       { protocol: 'https', hostname: 'upload.wikimedia.org' },
+      // Fotos enviadas por quem usa o BROTA: perfis, publicações, jardim.
+      // Sem esta linha o Next recusa a imagem antes de mostrá-la.
+      {
+        protocol: 'https',
+        hostname: '**.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
     ],
   },
   experimental: {

@@ -6,7 +6,6 @@ import { BrotaLogo } from '@/components/ui/logo';
 import { Icon } from '@/components/ui/icon';
 import { Avatar } from '@/components/ui/avatar';
 import { DropdownMenu, MenuItem, MenuSeparator } from '@/components/ui/menu';
-import { signOutAction } from '@/server/actions/auth';
 
 type TopBarProps = {
   user: { name: string; username: string | null; image: string | null } | null;
@@ -112,7 +111,9 @@ export function TopBar({ user, unreadNotifications, isStaff }: TopBarProps) {
                   </Link>
                 ) : null}
                 <MenuSeparator />
-                <form action={signOutAction}>
+                {/* Envio comum do navegador, sem ação de servidor: é o que
+                    garante que o cookie de sessão seja apagado de verdade. */}
+                <form action="/api/sair" method="post">
                   <MenuItem icon="logout" tone="danger" type="submit">
                     Sair
                   </MenuItem>

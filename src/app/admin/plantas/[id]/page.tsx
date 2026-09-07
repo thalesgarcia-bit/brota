@@ -7,6 +7,7 @@ import { prisma } from '@/lib/db/prisma';
 import { Icon } from '@/components/ui/icon';
 import { Alert } from '@/components/ui/feedback';
 import { PlantForm } from '@/components/admin/plant-form';
+import { PlantActions } from '@/components/admin/plant-actions';
 
 // Consulta o banco a cada requisicao, nunca durante o build (Cloudflare + Prisma).
 export const dynamic = 'force-dynamic';
@@ -122,6 +123,12 @@ export default async function EditPlantPage({
               url: source.url ?? '',
             })),
           }}
+        />
+
+        <PlantActions
+          plantId={plant.id}
+          nome={plant.commonNames[0]?.name ?? plant.scientificName}
+          archived={plant.status === 'ARCHIVED'}
         />
       </div>
     </div>
