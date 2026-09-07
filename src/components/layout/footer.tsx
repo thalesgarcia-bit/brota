@@ -33,9 +33,10 @@ export function SiteFooter() {
 
         <div className="mt-8 border-t border-ink-200 pt-6">
           <p className="text-xs leading-relaxed text-ink-500">
-            Idealizado pela turma do 9º ano da Escola Criativa de Uberaba e
-            desenvolvido pelos estudantes com o Prof. Thales Garcia, na
-            disciplina de Projeto de Vida. Coordenação da Profª Carol Manhezzo.
+            Idealizado pela turma do 9º ano da Escola Criativa de Uberaba
+            na disciplina de Projeto de Vida, sob a coordenação da Profª
+            Carol Manhezzo. O BROTA foi desenvolvido pelos estudantes com
+            apoio do Prof. Thales Garcia.
           </p>
           <p className="mt-2 text-xs text-ink-400">
             Dados de estabelecimentos: © colaboradores do OpenStreetMap.

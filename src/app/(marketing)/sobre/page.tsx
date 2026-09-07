@@ -142,11 +142,10 @@ export default function AboutPage() {
             </dl>
 
             <p className="mt-6 border-t border-ink-100 pt-5 text-sm leading-relaxed text-ink-600">
-              O BROTA foi idealizado pela turma do 9º ano da Escola Criativa de
-              Uberaba e desenvolvido pelos estudantes com o Prof. Thales Garcia,
-              em parceria com a Profª Carol Manhezzo, a Profª Mikaella de Sousa
-              e o Prof. Thales Garcia, na disciplina de Projeto de Vida.
-              Coordenação da Profª Carol Manhezzo.
+              Idealizado pela turma do 9º ano da Escola Criativa de Uberaba
+              na disciplina de Projeto de Vida, sob a coordenação da Profª
+              Carol Manhezzo. O BROTA foi desenvolvido pelos estudantes com
+              apoio do Prof. Thales Garcia.
             </p>
           </div>
         </div>
