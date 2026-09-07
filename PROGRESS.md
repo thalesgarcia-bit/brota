@@ -169,8 +169,23 @@ prontas para rodar com `npm test` assim que as dependências forem instaladas.
 | **Armazenamento de imagens** | **Resolvido** | Adapter do Supabase Storage implementado; compressão no navegador dispensa biblioteca nativa no servidor. |
 | **Fotografias das espécies** | Nenhuma cadastrada | O catálogo usa um marcador ilustrado gerado a partir do nome. Não usamos foto de banco de imagens nem imagem de outra espécie. |
 | **Limite da Overpass API** | Endpoint público | Em produção com volume, instância própria. |
-| **Editor de conteúdos educativos** | Leitura no admin | O corpo dos textos ainda é editado pelo seed ou pelo banco. |
+| **Editor de conteúdos educativos** | **Resolvido** | Criar, editar, publicar e arquivar pelo painel, com barra de formatação e pré-visualização. Sob `admin:manage_content`. |
 | **Notificações push** | Arquitetura de lembretes pronta | Falta o agendador e a integração com Web Push. |
+
+---
+
+## Fila de trabalho — 7 de setembro de 2026
+
+Em ordem. O que vem primeiro destrava o que vem depois.
+
+| # | Item | Por que está nessa posição |
+| --- | --- | --- |
+| 1 | **Migrar para a Vercel** | O plano gratuito dos Cloudflare Workers dá **10 ms de processamento por requisição**. Só a conferência de senha custa mais que isso, e o site cai com erro 1102 sob uso normal. Não é defeito do código: é teto abaixo do necessário. A Vercel roda Next.js sem esse teto, de graça, e dispensa o adaptador OpenNext, o Prisma em WebAssembly e as variáveis que o deploy apagava. O Supabase continua igual. |
+| 2 | **Remover as páginas temporárias** | `/teste-acao` e `/api/diagnostico-a7f3c9e21b` foram criadas para achar por que os formulários falhavam. A causa foi encontrada e corrigida; elas não têm mais função e não devem ficar num site com turma dentro. |
+| 3 | **Estabelecimentos escolhidos a dedo** | A tela existe e a tabela existe, mas não há formulário para cadastrar, e a página pública não lê essa tabela — consulta o OpenStreetMap ao vivo. A aba saiu do menu até isso mudar. Falta: formulário de cadastro e mistura desses lugares nos resultados da busca, com prioridade sobre os do mapa. |
+| 4 | **Textos do questionário editáveis** | Mudar o texto de uma pergunta é barato. Acrescentar ou tirar uma opção mexe na lista fixa do banco **e** nas regras do motor de recomendação, que precisa saber pontuar a opção nova — sem isso, a recomendação fica silenciosamente errada. Estrutura passa por decisão; texto pode ser autonomia da turma. |
+| 5 | **Nome e logo** | A turma decide. O símbolo é abstrato e sobrevive; a palavra aparece em 72 arquivos, quase toda em texto visível. A frase do projeto usa o verbo *brotar* — cada ocorrência precisa ser relida, não substituída em massa. Quanto antes for feito, menos texto haverá para reescrever. |
+| 6 | **Provedor de e-mail** | Opcional. A redefinição de senha pelo painel cobre o caso escolar, e a página de recuperação já diz isso em vez de prometer um e-mail que não sai. |
 
 ---
 
