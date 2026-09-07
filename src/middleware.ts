@@ -32,14 +32,17 @@ export default auth((request) => {
     return NextResponse.redirect(url);
   }
 
-  // O painel administrativo exige papel de staff já na borda.
-  if (pathname.startsWith('/admin')) {
-    const role = request.auth.user.role;
-    if (role !== 'ADMIN' && role !== 'MODERATOR') {
-      return NextResponse.redirect(new URL('/sem-permissao', request.nextUrl.origin));
-    }
-  }
-
+  // O papel NÃO é decidido aqui, e isso é deliberado.
+  //
+  // O middleware roda no runtime Edge e só enxerga o que está assinado dentro
+  // do cookie — um token emitido no momento em que a pessoa entrou. Promover
+  // alguém a Moderador muda o banco, não o cookie que já está no navegador
+  // dela. O resultado era um moderador de verdade sendo barrado na borda por um
+  // papel velho, sem nunca chegar à página que teria deixado ele passar.
+  //
+  // Quem decide é o layout de /admin, com requireStaff(), que lê o papel
+  // conferido no banco a cada requisição. Aqui fica só a pergunta que o cookie
+  // responde com segurança: existe sessão?
   return NextResponse.next();
 });
 

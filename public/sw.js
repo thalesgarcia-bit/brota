@@ -13,13 +13,30 @@
  * de build a mais.
  * ========================================================================== */
 
-const VERSION = 'brota-v1';
+const VERSION = 'brota-v2';
 const PAGES_CACHE = `${VERSION}-paginas`;
 const ASSETS_CACHE = `${VERSION}-estaticos`;
 const IMAGES_CACHE = `${VERSION}-imagens`;
 const MAX_IMAGES = 60;
 
 const OFFLINE_URL = '/offline';
+
+/** Caminhos que só existem para quem está autenticado: nunca vão para o cache. */
+const PRIVADO = [
+  '/api',
+  '/admin',
+  '/configuracoes',
+  '/notificacoes',
+  '/feed',
+  '/jardim',
+  '/salvos',
+  '/publicar',
+  '/perfil',
+  '/recomendacoes',
+  '/onboarding',
+  '/entrar',
+  '/cadastrar',
+];
 
 const PRECACHE = [OFFLINE_URL, '/icons/icon-192.png', '/manifest.webmanifest'];
 
@@ -96,11 +113,15 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   // Nunca guardar em cache autenticação, API ou dados pessoais.
+  //
+  // O BROTA roda em computador de escola, dividido entre muita gente. Uma
+  // página guardada aqui sobrevive ao "Sair": bastaria ficar sem rede para o
+  // feed de quem usou antes reaparecer. Então tudo o que só existe para quem
+  // está dentro fica de fora do cache.
   if (
-    url.pathname.startsWith('/api/') ||
-    url.pathname.startsWith('/admin') ||
-    url.pathname.startsWith('/configuracoes') ||
-    url.pathname.startsWith('/notificacoes')
+    PRIVADO.some(
+      (prefixo) => url.pathname === prefixo || url.pathname.startsWith(`${prefixo}/`),
+    )
   ) {
     return;
   }

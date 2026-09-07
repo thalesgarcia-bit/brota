@@ -74,7 +74,17 @@ export function DropdownMenu({
         <div
           id={menuId}
           role="menu"
-          onClick={() => setOpen(false)}
+          onClick={(event) => {
+            // Selecionar um item fecha o menu — menos quando o item envia um
+            // formulário. O botão "Sair" é um <button type="submit"> dentro de
+            // um <form action={...}>: fechar aqui desmontaria o formulário no
+            // mesmo clique, e a ação de servidor era cancelada antes de sair do
+            // navegador. Era esse o motivo de o "Sair" não sair. O envio leva a
+            // pessoa para outra página, e o menu fecha junto.
+            const alvo = (event.target as HTMLElement).closest('button');
+            if (alvo instanceof HTMLButtonElement && alvo.type === 'submit') return;
+            setOpen(false);
+          }}
           className={cn(
             'absolute z-40 mt-2 min-w-52 rounded-lg border border-ink-200 bg-white p-1 shadow-lg animate-rise',
             align === 'end' ? 'right-0' : 'left-0',
