@@ -8,10 +8,8 @@ import { Input } from '@/components/ui/input';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { Alert } from '@/components/ui/feedback';
 import { IconButton } from '@/components/ui/button';
-import {
-  INITIAL_FORM_STATE,
-  signInAction,
-} from '@/server/actions/account';
+import { signInAction } from '@/server/actions/account';
+import { INITIAL_FORM_STATE } from '@/server/actions/form-state';
 
 export function SignInForm({ next }: { next: string | null }) {
   const [state, action] = useActionState(signInAction, INITIAL_FORM_STATE);

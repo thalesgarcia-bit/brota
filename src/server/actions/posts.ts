@@ -8,7 +8,7 @@ import { assertPermission, AuthorizationError } from '@/lib/auth/session';
 import { can } from '@/lib/auth/rbac';
 import { createCommentSchema, createPostSchema } from '@/lib/validation/post';
 import { createReportSchema } from '@/lib/validation/community';
-import type { FormState } from './account';
+import type { FormState } from './form-state';
 
 function fieldErrors(error: {
   issues: { path: (string | number)[]; message: string }[];

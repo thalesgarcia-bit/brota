@@ -9,7 +9,8 @@ import { Checkbox } from '@/components/ui/choice';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { Alert } from '@/components/ui/feedback';
 import { IconButton } from '@/components/ui/button';
-import { INITIAL_FORM_STATE, signUpAction } from '@/server/actions/account';
+import { signUpAction } from '@/server/actions/account';
+import { INITIAL_FORM_STATE } from '@/server/actions/form-state';
 
 export function SignUpForm() {
   const [state, action] = useActionState(signUpAction, INITIAL_FORM_STATE);

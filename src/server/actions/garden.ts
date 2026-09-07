@@ -10,7 +10,7 @@ import {
   reminderSchema,
   updateUserPlantSchema,
 } from '@/lib/validation/garden';
-import type { FormState } from './account';
+import type { FormState } from './form-state';
 import { grantAchievement } from './plants';
 
 function fieldErrors(error: {

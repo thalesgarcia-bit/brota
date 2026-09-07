@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Modal } from '@/components/ui/modal';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { Alert } from '@/components/ui/feedback';
-import { INITIAL_FORM_STATE } from '@/server/actions/account';
+import { INITIAL_FORM_STATE } from '@/server/actions/form-state';
 import { deleteAccountAction } from '@/server/actions/account-deletion';
 
 /** Exclusão de conta — direito garantido pela LGPD, com confirmação dupla. */

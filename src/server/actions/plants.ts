@@ -5,9 +5,9 @@ import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db/prisma';
 import { assertPermission, AuthorizationError } from '@/lib/auth/session';
 import { createSuggestionSchema } from '@/lib/validation/community';
-import type { FormState } from './account';
+import type { FormState } from './form-state';
 
-export type ToggleResult = {
+type ToggleResult = {
   ok: boolean;
   active: boolean;
   message?: string;

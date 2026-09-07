@@ -9,7 +9,8 @@ import { SubmitButton } from '@/components/ui/submit-button';
 import { Alert } from '@/components/ui/feedback';
 import { useToast } from '@/components/ui/toast';
 import { EXPERIENCE } from '@/lib/labels';
-import { INITIAL_FORM_STATE, updateProfileAction } from '@/server/actions/account';
+import { updateProfileAction } from '@/server/actions/account';
+import { INITIAL_FORM_STATE } from '@/server/actions/form-state';
 
 type Initial = {
   displayName: string;

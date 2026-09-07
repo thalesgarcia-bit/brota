@@ -11,7 +11,7 @@ import {
   requestPasswordResetSchema,
   resetPasswordSchema,
 } from '@/lib/validation/auth';
-import type { FormState } from './account';
+import type { FormState } from './form-state';
 
 const TOKEN_TTL_MINUTES = 60;
 

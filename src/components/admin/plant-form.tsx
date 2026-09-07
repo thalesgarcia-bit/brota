@@ -20,10 +20,8 @@ import {
   TOXICITY,
   WATER,
 } from '@/lib/labels';
-import {
-  INITIAL_PLANT_FORM_STATE,
-  savePlantAction,
-} from '@/server/actions/plant-admin';
+import { savePlantAction } from '@/server/actions/plant-admin';
+import { INITIAL_PLANT_FORM_STATE } from '@/server/actions/form-state';
 
 export type PlantFormInitial = {
   id?: string;

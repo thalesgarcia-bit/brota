@@ -11,7 +11,7 @@ import { SubmitButton } from '@/components/ui/submit-button';
 import { Alert } from '@/components/ui/feedback';
 import { useToast } from '@/components/ui/toast';
 import { SUGGESTABLE_FIELDS } from '@/lib/validation/community';
-import { INITIAL_FORM_STATE } from '@/server/actions/account';
+import { INITIAL_FORM_STATE } from '@/server/actions/form-state';
 import { createSuggestionAction } from '@/server/actions/plants';
 
 /**

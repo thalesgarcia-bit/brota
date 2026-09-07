@@ -7,14 +7,8 @@ import { prisma } from '@/lib/db/prisma';
 import { assertPermission, AuthorizationError } from '@/lib/auth/session';
 import { plantFormWithRulesSchema } from '@/lib/validation/plant';
 import { normalizeSearch, slugify } from '@/lib/utils/slug';
+import type { PlantFormState } from './form-state';
 
-export type PlantFormState = {
-  status: 'idle' | 'error' | 'success';
-  message?: string;
-  fieldErrors?: Record<string, string>;
-};
-
-export const INITIAL_PLANT_FORM_STATE: PlantFormState = { status: 'idle' };
 
 function toList(value: FormDataEntryValue | null): string[] {
   if (typeof value !== 'string' || !value.trim()) return [];

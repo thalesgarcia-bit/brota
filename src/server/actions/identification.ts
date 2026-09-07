@@ -22,7 +22,7 @@ import {
 } from '@/server/services/identification';
 import { grantAchievement } from './plants';
 
-export type IdentifyResponse =
+type IdentifyResponse =
   | { ok: true; outcome: IdentificationOutcome }
   | { ok: false; message: string; code?: string };
 

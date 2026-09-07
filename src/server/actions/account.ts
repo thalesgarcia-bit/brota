@@ -10,6 +10,7 @@ import { hashPassword } from '@/lib/auth/password';
 import { requireUser } from '@/lib/auth/session';
 import { credentialsSchema, signUpSchema } from '@/lib/validation/auth';
 import { updateProfileSchema } from '@/lib/validation/profile';
+import type { FormState } from './form-state';
 
 /* ===========================================================================
  * AÇÕES DE CONTA
@@ -17,13 +18,6 @@ import { updateProfileSchema } from '@/lib/validation/profile';
  * apenas para dar retorno rápido ao usuário.
  * =========================================================================== */
 
-export type FormState = {
-  status: 'idle' | 'error' | 'success';
-  message?: string;
-  fieldErrors?: Record<string, string>;
-};
-
-export const INITIAL_FORM_STATE: FormState = { status: 'idle' };
 
 function fieldErrorsFrom(error: {
   issues: { path: (string | number)[]; message: string }[];

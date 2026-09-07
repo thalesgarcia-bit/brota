@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils/cn';
 import { POST_TYPE } from '@/lib/labels';
 import { formatRelative } from '@/lib/utils/format';
 import { REPORT_REASONS } from '@/lib/validation/community';
-import { INITIAL_FORM_STATE } from '@/server/actions/account';
+import { INITIAL_FORM_STATE } from '@/server/actions/form-state';
 import {
   createCommentAction,
   createReportAction,

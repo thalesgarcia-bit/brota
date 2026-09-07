@@ -11,7 +11,7 @@ import { SubmitButton } from '@/components/ui/submit-button';
 import { Alert } from '@/components/ui/feedback';
 import { useToast } from '@/components/ui/toast';
 import { LIGHT } from '@/lib/labels';
-import { INITIAL_FORM_STATE } from '@/server/actions/account';
+import { INITIAL_FORM_STATE } from '@/server/actions/form-state';
 import { createUserPlantAction } from '@/server/actions/garden';
 import { SpeciesPicker } from './species-picker';
 

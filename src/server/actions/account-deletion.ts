@@ -11,7 +11,7 @@ import {
   changePasswordSchema,
   deleteAccountSchema,
 } from '@/lib/validation/auth';
-import type { FormState } from './account';
+import type { FormState } from './form-state';
 
 function fieldErrorsFrom(error: {
   issues: { path: (string | number)[]; message: string }[];
