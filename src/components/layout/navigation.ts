@@ -1,4 +1,5 @@
 import type { IconName } from '@/components/ui/icon';
+import type { Permission } from '@/lib/auth/rbac';
 
 export type NavItem = {
   href: string;
@@ -30,17 +31,30 @@ export const FOOTER_LINKS = [
   { href: '/contato', label: 'Contato' },
 ];
 
-export const ADMIN_NAV: { href: string; label: string; icon: IconName }[] = [
-  { href: '/admin', label: 'Visão geral', icon: 'chart' },
-  { href: '/admin/plantas', label: 'Plantas', icon: 'leaf' },
-  { href: '/admin/identificacoes', label: 'Identificações', icon: 'scan' },
-  { href: '/admin/sugestoes', label: 'Sugestões', icon: 'edit' },
-  { href: '/admin/publicacoes', label: 'Publicações', icon: 'image' },
-  { href: '/admin/comentarios', label: 'Comentários', icon: 'message' },
-  { href: '/admin/denuncias', label: 'Denúncias', icon: 'flag' },
-  { href: '/admin/usuarios', label: 'Usuários', icon: 'users' },
-  { href: '/admin/conteudos', label: 'Conteúdos', icon: 'book' },
-  { href: '/admin/estabelecimentos', label: 'Estabelecimentos', icon: 'mapPin' },
-  { href: '/admin/configuracoes', label: 'Configurações', icon: 'settings' },
-  { href: '/admin/logs', label: 'Registros', icon: 'list' },
+/**
+ * Áreas do painel.
+ *
+ * Cada uma declara aqui a mesma permissão que a página exige do servidor. Foi
+ * assim para que o menu nunca ofereça uma porta que a pessoa não consegue
+ * abrir — antes, a lista de quem vê o quê era mantida à mão em outro arquivo,
+ * e bastava alguém mudar um papel para as duas discordarem.
+ */
+export const ADMIN_NAV: {
+  href: string;
+  label: string;
+  icon: IconName;
+  permission: Permission;
+}[] = [
+  { href: '/admin', label: 'Visão geral', icon: 'chart', permission: 'admin:view' },
+  { href: '/admin/plantas', label: 'Plantas', icon: 'leaf', permission: 'admin:manage_plants' },
+  { href: '/admin/identificacoes', label: 'Identificações', icon: 'scan', permission: 'admin:review_identifications' },
+  { href: '/admin/sugestoes', label: 'Sugestões', icon: 'edit', permission: 'admin:review_suggestions' },
+  { href: '/admin/publicacoes', label: 'Publicações', icon: 'image', permission: 'moderation:view' },
+  { href: '/admin/comentarios', label: 'Comentários', icon: 'message', permission: 'moderation:view' },
+  { href: '/admin/denuncias', label: 'Denúncias', icon: 'flag', permission: 'moderation:handle_reports' },
+  { href: '/admin/usuarios', label: 'Usuários', icon: 'users', permission: 'admin:manage_users' },
+  { href: '/admin/conteudos', label: 'Conteúdos', icon: 'book', permission: 'admin:manage_content' },
+  { href: '/admin/estabelecimentos', label: 'Estabelecimentos', icon: 'mapPin', permission: 'admin:manage_content' },
+  { href: '/admin/configuracoes', label: 'Configurações', icon: 'settings', permission: 'admin:manage_settings' },
+  { href: '/admin/logs', label: 'Registros', icon: 'list', permission: 'admin:view_logs' },
 ];

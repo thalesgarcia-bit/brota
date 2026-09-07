@@ -44,11 +44,26 @@ const USER_PERMISSIONS: Permission[] = [
   'report:create',
 ];
 
+/**
+ * Moderador é o papel dos estudantes que mantêm o BROTA: eles moderam a
+ * comunidade e são a redação do conteúdo — escrevem, revisam e cadastram.
+ *
+ * O que fica de fora é deliberado. Gerenciar contas, mudar configurações e ler
+ * os registros continuam com a administração, e por um motivo prático: se todo
+ * mundo pode trocar o papel e a senha de todo mundo, o histórico deixa de
+ * proteger qualquer pessoa — inclusive quem o consulta.
+ */
 const MODERATOR_PERMISSIONS: Permission[] = [
   ...USER_PERMISSIONS,
   'moderation:view',
   'moderation:hide_content',
   'moderation:handle_reports',
+
+  'admin:view',
+  'admin:manage_plants',
+  'admin:manage_content',
+  'admin:review_identifications',
+  'admin:review_suggestions',
 ];
 
 const ADMIN_PERMISSIONS: Permission[] = [...PERMISSIONS];

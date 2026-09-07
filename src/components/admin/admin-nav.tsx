@@ -9,18 +9,8 @@ import { BrotaLogo } from '@/components/ui/logo';
 import { Icon } from '@/components/ui/icon';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils/cn';
+import { can } from '@/lib/auth/rbac';
 import { ADMIN_NAV } from '@/components/layout/navigation';
-
-/** Áreas que só o administrador acessa. Moderador vê apenas moderação. */
-const ADMIN_ONLY = new Set([
-  '/admin/plantas',
-  '/admin/sugestoes',
-  '/admin/conteudos',
-  '/admin/estabelecimentos',
-  '/admin/usuarios',
-  '/admin/configuracoes',
-  '/admin/logs',
-]);
 
 export function AdminNav({
   role,
@@ -32,9 +22,10 @@ export function AdminNav({
   const pathname = usePathname();
   const [openOnMobile, setOpenOnMobile] = useState(false);
 
-  const items = ADMIN_NAV.filter(
-    (item) => role === 'ADMIN' || !ADMIN_ONLY.has(item.href),
-  );
+  // O menu mostra exatamente o que o servidor deixaria abrir: mesma permissão,
+  // uma fonte só. Esconder o item não é o controle de acesso — o controle está
+  // na página; isto apenas evita oferecer uma porta trancada.
+  const items = ADMIN_NAV.filter((item) => can(role, item.permission));
 
   const list = (
     <ul className="space-y-0.5">

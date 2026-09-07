@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-import { requireStaff } from '@/lib/auth/session';
+import { requirePermission } from '@/lib/auth/session';
 import { prisma } from '@/lib/db/prisma';
 import { Icon, type IconName } from '@/components/ui/icon';
 import { Badge } from '@/components/ui/badge';
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 /** Todos os números desta página vêm do banco. Nenhum valor de exemplo. */
 export default async function AdminDashboard() {
-  const user = await requireStaff('/admin');
+  const user = await requirePermission('admin:view', '/admin');
   const isAdmin = user.role === 'ADMIN';
 
   const since30Days = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
