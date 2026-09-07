@@ -111,7 +111,7 @@ export function Modal({
         ) : null}
 
         {footer ? (
-          <footer className="border-t border-ink-100 px-5 py-4 pb-safe">
+          <footer className="border-t border-ink-100 px-5 pt-4 pb-4-safe">
             {footer}
           </footer>
         ) : null}

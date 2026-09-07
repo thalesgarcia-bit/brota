@@ -329,11 +329,22 @@
   overflow: hidden;
 }
 
-/* Respeita a área segura de aparelhos com notch / barra de gestos. */
+/* Respeita a área segura de aparelhos com notch / barra de gestos.
+ *
+ * Usar só em elementos que encostam na borda da tela e não têm espaçamento
+ * próprio — barras fixas. Num elemento que já declara padding, estas classes
+ * SUBSTITUEM o valor: no computador, onde a área segura é zero, o espaçamento
+ * viraria zero e o conteúdo encostaria na borda. Foi o que aconteceu com os
+ * botões do modal, que pareciam cortados. */
 @utility pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 @utility pt-safe {
   padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Para quem já tem espaçamento e também precisa da área segura: soma os dois. */
+@utility pb-4-safe {
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
 }

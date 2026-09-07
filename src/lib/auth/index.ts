@@ -76,9 +76,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             ? token.sub
             : null;
 
-      // Recarrega os dados quando a sessão é atualizada explicitamente
-      // (troca de papel pelo admin, conclusão do onboarding, novo apelido).
-      if (trigger === 'update' && tokenId) {
+      // O token é assinado uma vez e viaja com o navegador. Sem reconferir, uma
+      // promoção feita no painel só apareceria para a pessoa depois de ela sair
+      // e entrar de novo — e ninguém adivinha isso. Por outro lado, consultar o
+      // banco a cada requisição sairia caro à toa: o papel de alguém muda
+      // raramente. O meio-termo é reconferir a cada poucos minutos.
+      const AGORA = Date.now();
+      const INTERVALO_DE_CONFERENCIA = 5 * 60 * 1000;
+
+      const precisaConferir =
+        trigger === 'update' ||
+        typeof token.conferidoEm !== 'number' ||
+        AGORA - token.conferidoEm > INTERVALO_DE_CONFERENCIA;
+
+      if (precisaConferir && tokenId) {
         const fresh = await prisma.user.findUnique({
           where: { id: tokenId },
           select: {
@@ -94,6 +105,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           token.username = fresh.profile?.username ?? null;
           token.hasGreenProfile = Boolean(fresh.greenProfile);
         }
+
+        token.conferidoEm = AGORA;
       }
 
       return token;

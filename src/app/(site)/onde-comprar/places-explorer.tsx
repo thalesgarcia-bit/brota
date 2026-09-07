@@ -311,8 +311,11 @@ export function PlacesExplorer() {
                       ) : null}
 
                       <div className="mt-3 flex flex-wrap gap-3 text-sm">
+                        {/* Rota em um serviço de mapas comum: abre o aplicativo no
+                            celular e não exige conta de ninguém. Os dados do lugar
+                            continuam vindo do OpenStreetMap, creditado no rodapé. */}
                         <a
-                          href={`https://www.openstreetmap.org/directions?to=${place.latitude},${place.longitude}`}
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${place.latitude},${place.longitude}`}
                           target="_blank"
                           rel="noreferrer noopener"
                           onClick={(event) => event.stopPropagation()}
@@ -320,6 +323,17 @@ export function PlacesExplorer() {
                         >
                           <Icon name="navigation" size={14} />
                           Como chegar
+                        </a>
+
+                        <a
+                          href={`https://www.openstreetmap.org/?mlat=${place.latitude}&mlon=${place.longitude}#map=18/${place.latitude}/${place.longitude}`}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          onClick={(event) => event.stopPropagation()}
+                          className="inline-flex items-center gap-1.5 text-ink-500 hover:text-brand-700 hover:underline"
+                        >
+                          <Icon name="mapPin" size={14} />
+                          No mapa aberto
                         </a>
 
                         {place.phone ? (

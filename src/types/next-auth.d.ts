@@ -24,6 +24,8 @@ declare module 'next-auth/jwt' {
     role: Role;
     username: string | null;
     hasGreenProfile: boolean;
+    /** Quando os dados do token foram conferidos no banco pela última vez. */
+    conferidoEm?: number;
   }
 }
 

@@ -39,6 +39,11 @@ export const FOOTER_LINKS = [
  * abrir — antes, a lista de quem vê o quê era mantida à mão em outro arquivo,
  * e bastava alguém mudar um papel para as duas discordarem.
  */
+// Fora da lista por ora: /admin/estabelecimentos. A tela existe e lista a
+// tabela de estabelecimentos escolhidos a dedo, mas ainda não há como
+// cadastrar um, e a página pública não lê essa tabela — ela consulta o
+// OpenStreetMap ao vivo. Uma aba que não faz nada confunde mais do que ajuda;
+// ela volta quando o cadastro existir.
 export const ADMIN_NAV: {
   href: string;
   label: string;
@@ -54,7 +59,6 @@ export const ADMIN_NAV: {
   { href: '/admin/denuncias', label: 'Denúncias', icon: 'flag', permission: 'moderation:handle_reports' },
   { href: '/admin/usuarios', label: 'Usuários', icon: 'users', permission: 'admin:manage_users' },
   { href: '/admin/conteudos', label: 'Conteúdos', icon: 'book', permission: 'admin:manage_content' },
-  { href: '/admin/estabelecimentos', label: 'Estabelecimentos', icon: 'mapPin', permission: 'admin:manage_content' },
   { href: '/admin/configuracoes', label: 'Configurações', icon: 'settings', permission: 'admin:manage_settings' },
   { href: '/admin/logs', label: 'Registros', icon: 'list', permission: 'admin:view_logs' },
 ];
