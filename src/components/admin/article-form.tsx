@@ -1,12 +1,14 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 
 import { Field } from '@/components/ui/field';
 import { Input, Select, Textarea } from '@/components/ui/input';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { Alert } from '@/components/ui/feedback';
-import { Icon } from '@/components/ui/icon';
+import { Icon, type IconName } from '@/components/ui/icon';
+import { cn } from '@/lib/utils/cn';
+import { Markdown } from '@/components/ui/markdown';
 import { saveArticleAction } from '@/server/actions/content';
 import { INITIAL_FORM_STATE } from '@/server/actions/form-state';
 
@@ -28,6 +30,70 @@ function estimarMinutos(texto: string): number {
   return Math.max(1, Math.ceil(palavras / 200));
 }
 
+/**
+ * Botões de formatação.
+ *
+ * Cada um corresponde a uma marca que o renderizador do BROTA entende. Os
+ * estudantes clicam; a marca é escrita por baixo. Quem preferir digitar
+ * continua podendo — é o mesmo texto.
+ *
+ * `linha` marca o começo de cada linha selecionada (subtítulo, lista, citação);
+ * `volta` envolve o trecho escolhido dos dois lados (negrito, link).
+ */
+type Ferramenta = {
+  chave: string;
+  rotulo: string;
+  icone: IconName;
+  linha?: string;
+  volta?: [string, string];
+  exemplo: string;
+};
+
+const FERRAMENTAS: Ferramenta[] = [
+  { chave: 'titulo', rotulo: 'Subtítulo', icone: 'note', linha: '## ', exemplo: 'Subtítulo' },
+  { chave: 'negrito', rotulo: 'Negrito', icone: 'edit', volta: ['**', '**'], exemplo: 'texto em destaque' },
+  { chave: 'lista', rotulo: 'Lista', icone: 'list', linha: '- ', exemplo: 'primeiro item' },
+  { chave: 'numerada', rotulo: 'Lista numerada', icone: 'chart', linha: '1. ', exemplo: 'primeiro passo' },
+  { chave: 'citacao', rotulo: 'Citação', icone: 'message', linha: '> ', exemplo: 'trecho citado' },
+  { chave: 'link', rotulo: 'Link', icone: 'externalLink', volta: ['[', '](https://)'], exemplo: 'texto do link' },
+];
+
+/** Aplica uma ferramenta ao trecho selecionado e devolve o texto e onde deixar o cursor. */
+function aplicar(
+  texto: string,
+  inicio: number,
+  fim: number,
+  ferramenta: Ferramenta,
+): { texto: string; de: number; ate: number } {
+  const selecionado = texto.slice(inicio, fim) || ferramenta.exemplo;
+
+  if (ferramenta.volta) {
+    const [abre, fecha] = ferramenta.volta;
+    return {
+      texto: texto.slice(0, inicio) + abre + selecionado + fecha + texto.slice(fim),
+      de: inicio + abre.length,
+      ate: inicio + abre.length + selecionado.length,
+    };
+  }
+
+  const marca = ferramenta.linha ?? '';
+
+  // A marca pertence à linha inteira, então a seleção é esticada até o começo
+  // dela — senão o "##" nasceria no meio de uma frase.
+  const comecoDaLinha = texto.lastIndexOf('\n', inicio - 1) + 1;
+  const bloco = texto.slice(comecoDaLinha, fim) || ferramenta.exemplo;
+  const marcado = bloco
+    .split('\n')
+    .map((linha) => (linha.startsWith(marca) ? linha : marca + linha))
+    .join('\n');
+
+  return {
+    texto: texto.slice(0, comecoDaLinha) + marcado + texto.slice(fim),
+    de: comecoDaLinha + marca.length,
+    ate: comecoDaLinha + marcado.length,
+  };
+}
+
 export function ArticleForm({
   initial,
   categories,
@@ -39,6 +105,29 @@ export function ArticleForm({
   const [state, action] = useActionState(saveArticleAction, INITIAL_FORM_STATE);
   const [body, setBody] = useState(initial.body);
   const [minutos, setMinutos] = useState(initial.readingMinutes);
+  const [visualizando, setVisualizando] = useState(false);
+
+  const areaRef = useRef<HTMLTextAreaElement>(null);
+  const selecao = useRef<{ de: number; ate: number } | null>(null);
+
+  // Depois de formatar, o cursor volta para dentro do trecho — a pessoa
+  // continua digitando de onde estava, sem ter que clicar de novo.
+  useEffect(() => {
+    const alvo = selecao.current;
+    const area = areaRef.current;
+    if (!alvo || !area) return;
+    selecao.current = null;
+    area.focus();
+    area.setSelectionRange(alvo.de, alvo.ate);
+  }, [body]);
+
+  function formatar(ferramenta: Ferramenta) {
+    const area = areaRef.current;
+    if (!area) return;
+    const resultado = aplicar(body, area.selectionStart, area.selectionEnd, ferramenta);
+    selecao.current = { de: resultado.de, ate: resultado.ate };
+    setBody(resultado.texto);
+  }
 
   const erros = state.fieldErrors ?? {};
   const sugestao = estimarMinutos(body);
@@ -91,19 +180,78 @@ export function ArticleForm({
           label="Texto"
           required
           error={erros['body']}
-          hint="Aceita ## para subtítulos, - para listas, **negrito**, > para citações e [texto](endereço) para links."
+          hint="Selecione um trecho e use os botões para formatar. Antes de publicar, confira em Visualizar."
         >
           {(props) => (
-            <Textarea
-              {...props}
-              name="body"
-              rows={18}
-              value={body}
-              onChange={(event) => setBody(event.target.value)}
-              placeholder={'## Por onde começar\n\nEscreva aqui...'}
-              required
-              className="font-mono text-sm"
-            />
+            <>
+              <div className="flex flex-wrap items-center gap-1 rounded-t-md border border-b-0 border-ink-200 bg-ink-25 p-1.5">
+                {FERRAMENTAS.map((ferramenta) => (
+                  <button
+                    key={ferramenta.chave}
+                    type="button"
+                    title={ferramenta.rotulo}
+                    aria-label={ferramenta.rotulo}
+                    disabled={visualizando}
+                    onClick={() => formatar(ferramenta)}
+                    className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-ink-700 hover:bg-white hover:text-brand-700 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+                  >
+                    <Icon name={ferramenta.icone} size={15} />
+                    <span className="hidden sm:inline">{ferramenta.rotulo}</span>
+                  </button>
+                ))}
+
+                <div className="ml-auto flex rounded-md bg-ink-100 p-0.5">
+                  {[
+                    { chave: 'escrever', rotulo: 'Escrever', ativo: !visualizando },
+                    { chave: 'visualizar', rotulo: 'Visualizar', ativo: visualizando },
+                  ].map((aba) => (
+                    <button
+                      key={aba.chave}
+                      type="button"
+                      aria-pressed={aba.ativo}
+                      onClick={() => setVisualizando(aba.chave === 'visualizar')}
+                      className={cn(
+                        'rounded px-3 py-1.5 text-xs font-medium transition-colors',
+                        aba.ativo
+                          ? 'bg-white text-ink-900 shadow-xs'
+                          : 'text-ink-600 hover:text-ink-900',
+                      )}
+                    >
+                      {aba.rotulo}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* O texto continua existindo no formulário mesmo em pré-visualização:
+                  trocar de aba não pode significar perder o que foi escrito. */}
+              <Textarea
+                {...props}
+                ref={areaRef}
+                name="body"
+                rows={18}
+                value={body}
+                onChange={(event) => setBody(event.target.value)}
+                placeholder="Comece a escrever. Use os botões acima para dar forma ao texto."
+                required
+                className={cn(
+                  'rounded-t-none font-mono text-sm',
+                  visualizando && 'sr-only',
+                )}
+              />
+
+              {visualizando ? (
+                <div className="min-h-64 rounded-b-md border border-ink-200 bg-white px-4 py-4">
+                  {body.trim() ? (
+                    <Markdown content={body} />
+                  ) : (
+                    <p className="text-sm text-ink-500">
+                      Nada escrito ainda. Volte para Escrever e comece o texto.
+                    </p>
+                  )}
+                </div>
+              ) : null}
+            </>
           )}
         </Field>
 

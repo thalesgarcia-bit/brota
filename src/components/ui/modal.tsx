@@ -104,7 +104,11 @@ export function Modal({
           <IconButton icon="close" label="Fechar" onClick={onClose} size="sm" />
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">{children}</div>
+        {/* Sem conteúdo, sem caixa: uma confirmação que vive só de título e
+            descrição não deve abrir uma faixa vazia entre o texto e os botões. */}
+        {children ? (
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">{children}</div>
+        ) : null}
 
         {footer ? (
           <footer className="border-t border-ink-100 px-5 py-4 pb-safe">
